@@ -19,7 +19,7 @@ class FpNode
         uint64_t frequency;
         std::shared_ptr<FpNode> next_node_in_ht;
         std::weak_ptr<FpNode> parent;
-        std::vector<std::shared_ptr<FpNode>> children;
+        std::map<Item, std::shared_ptr<FpNode>> children;
         
         FpNode(const Item&, const std::shared_ptr<FpNode>&);
 };
@@ -30,10 +30,12 @@ class FpTree
     public:
         std::shared_ptr<FpNode> root;
         std::map<Item, std::shared_ptr<FpNode>> header_table;
+        std::map<Item, std::shared_ptr<FpNode>> last_node_in_header_table;
         uint64_t minimum_support_threshold;
 
         FpTree(const std::string&, uint64_t);
         FpTree(const std::vector<Transaction>& transactions, uint64_t);
+        FpTree(const std::vector<TransformedPrefixPath>& transactions, uint64_t);
 
         bool empty() const;
 };

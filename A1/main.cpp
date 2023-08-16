@@ -9,11 +9,14 @@
 
 void test_1()
 {
+    // std::string file_path = "/Users/chinmaymittal/Downloads/A1_datasets/D_medium2.dat";
     std::string file_path = "./test.dat";
 
     const uint64_t minimum_support_threshold = 2;
 
-    const FpTree fptree{ file_path, minimum_support_threshold };
+    const FpTree fptree{file_path, minimum_support_threshold };
+
+    std::cout << "Tree built " << std::endl ; 
 
     std::set<Pattern> frequent_patterns = mine_fptree(fptree);
 
