@@ -63,17 +63,14 @@ FpTree::FpTree(const std::vector<TransformedPrefixPath>& conditional_pattern_bas
 
         Transaction transaction;
         // remove infrequent items from the transaction database
-        // std::cout << "xxx" ;
         for(const Item& item : tfp.first)
         {
             if(frequency_by_item.count(item))
             {
                 transaction.push_back(item);
-                // std::cout << item << " " ;
             }
             
         }
-        // std::cout << std::endl ;
         // sort transaction by frequency
         sort(transaction.begin(), transaction.end(), [&frequency_by_item](Item a, Item b){
             return frequency_by_item[a] > frequency_by_item[b] ;
@@ -108,8 +105,7 @@ FpTree::FpTree(const std::vector<TransformedPrefixPath>& conditional_pattern_bas
             else {
                 // the child exist, increment its frequency
                 auto curr_fpnode_child = curr_fpnode->children[item];
-                // ++curr_fpnode_child->frequency;
-                curr_fpnode->frequency += tfp.second;
+                curr_fpnode_child->frequency += tfp.second;
 
                 // advance to the next node of the current transaction
                 curr_fpnode = curr_fpnode_child;
@@ -336,19 +332,6 @@ std::set<Pattern> mine_fptree(const FpTree& fptree)
             }
 
 
-            if(curr_item == 3)
-            {
-                for(auto pt : conditional_pattern_base)
-                {
-                    std::cout << "??";
-                    for(auto x : pt.first)
-                    {
-                        std::cout << x << " " ;
-                    }
-                    std::cout << pt.second << std::endl;
-                }
-            }
-
             // build the conditional fptree using the generated condition transactions
             const FpTree conditional_fptree(conditional_pattern_base, fptree.minimum_support_threshold);
             // this is a recursive function call
@@ -374,14 +357,6 @@ std::set<Pattern> mine_fptree(const FpTree& fptree)
             for (const Pattern& pattern : conditional_patterns)
             {
                 Pattern new_pattern{pattern};
-                if (curr_item == 3)
-                {
-                    for(auto ele : pattern.first)
-                    {
-                        std::cout << "--" << ele << " ";
-                    }
-                    std::cout << pattern.second << std::endl;
-                }
                 new_pattern.first.insert(curr_item);
                 new_pattern.second = pattern.second;
                 curr_item_patterns.insert({new_pattern});
