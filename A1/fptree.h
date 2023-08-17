@@ -33,8 +33,7 @@ class FpTree
         std::map<Item, std::shared_ptr<FpNode>> last_node_in_header_table;
         uint64_t minimum_support_threshold;
 
-        FpTree(const std::string&, uint64_t);
-        FpTree(const std::vector<Transaction>& transactions, uint64_t);
+        FpTree(const std::string&, float);
         FpTree(const std::vector<TransformedPrefixPath>& transactions, uint64_t);
 
         bool empty() const;

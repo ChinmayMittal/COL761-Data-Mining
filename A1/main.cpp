@@ -7,19 +7,17 @@
 #include "fptree.h"
 
 
-void test_1()
+void test_1(std::string file_path, float support_threshold)
 {
-    // std::string file_path = "/Users/chinmaymittal/Downloads/A1_datasets/D_medium2.dat";
-    std::string file_path = "./test.dat";
 
-    const uint64_t minimum_support_threshold = 2;
+    std::cout << "File Path " << file_path << ", Support Threshold " << (support_threshold*100) << "%" << std::endl;
 
-    const FpTree fptree{file_path, minimum_support_threshold };
+    const FpTree fptree{file_path, support_threshold};
 
     std::cout << "Tree built " << std::endl ; 
 
     std::set<Pattern> frequent_patterns = mine_fptree(fptree);
-
+    std::cout << frequent_patterns.size() << std::endl;
     for( const auto &pattern : frequent_patterns)
     {
         for(const auto &item : pattern.first)
@@ -33,7 +31,9 @@ void test_1()
 
 int main(int argc, const char *argv[])
 {
-    test_1();
+    std::string file_path = argv[1];
+    float support_threshold = std::stof(argv[2]);
+    test_1(file_path, support_threshold);
     std::cout << "All tests passed!" << std::endl;
 
     return EXIT_SUCCESS;

@@ -13,5 +13,8 @@ $(TARGET): $(OBJS)
 
 .PHONY: clean
 
+run: main
+	./main "./test.dat" 0.2
+
 clean:
 	rm -f $(OBJS) $(TARGET)
