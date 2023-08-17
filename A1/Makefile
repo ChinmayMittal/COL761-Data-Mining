@@ -14,7 +14,8 @@ $(TARGET): $(OBJS)
 .PHONY: clean
 
 run: main
-	./main "./test.dat" 0.2
+	./main "/Users/chinmaymittal/Downloads/A1_datasets/D_medium2.dat"
+# ./main ./test.dat
 
 clean:
 	rm -f $(OBJS) $(TARGET)

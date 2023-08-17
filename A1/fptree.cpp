@@ -145,12 +145,12 @@ FpTree::FpTree(const std::string& file_path, float minimum_support_threshold):
 
 
     this->minimum_support_threshold = int(minimum_support_threshold*total_transactions);
-    std::cout << this->minimum_support_threshold << std::endl;
+    std::cout << "Support --> " << this->minimum_support_threshold << std::endl;
     // keep only items with frequency greater than or equal to the minimum supported threshold
     for(auto item_frequencies_it = item_frequencies.cbegin(); item_frequencies_it != item_frequencies.cend() ;)
     {
         const uint64_t item_frequency = (*item_frequencies_it).second;
-        if( item_frequency < minimum_support_threshold )
+        if( item_frequency < this->minimum_support_threshold )
         {
             item_frequencies.erase(item_frequencies_it++);
         }else{
@@ -179,7 +179,7 @@ FpTree::FpTree(const std::string& file_path, float minimum_support_threshold):
                 transaction.push_back(item);
             }
         }
-        printProgressBar(transactions_processed++, total_transactions, 100);
+        // printProgressBar(transactions_processed++, total_transactions, 100);
         // sort transaction by frequency
         sort(transaction.begin(), transaction.end(), [&item_frequencies](Item a, Item b){
             return item_frequencies[a] > item_frequencies[b] ;
@@ -251,10 +251,10 @@ bool containts_single_path(const FpTree& fptree)
     return fptree.empty() || containts_single_path(fptree.root);
 }
 
-int cnt = 0 ; 
+// int cnt = 0 ; 
 std::set<Pattern> mine_fptree(const FpTree& fptree)
 {
-    std::cout << cnt ++ << std::endl ; 
+    // std::cout << cnt ++ << std::endl ; 
     if (fptree.empty()){ return {};}
 
     if (containts_single_path(fptree))
@@ -279,7 +279,7 @@ std::set<Pattern> mine_fptree(const FpTree& fptree)
             // create a new pattern by adding the item of the current node to all the previously generated patterns
             for( const Pattern& pattern : single_path_patterns )
             {
-                Pattern new_Pattern{pattern};
+                Pattern new_pattern = pattern;
                 new_pattern.first.insert(item);
                 new_pattern.second = frequency;
                 single_path_patterns.insert(new_pattern);
