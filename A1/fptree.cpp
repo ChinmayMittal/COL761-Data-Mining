@@ -63,13 +63,17 @@ FpTree::FpTree(const std::vector<TransformedPrefixPath>& conditional_pattern_bas
 
         Transaction transaction;
         // remove infrequent items from the transaction database
+        // std::cout << "xxx" ;
         for(const Item& item : tfp.first)
         {
             if(frequency_by_item.count(item))
             {
                 transaction.push_back(item);
+                // std::cout << item << " " ;
             }
+            
         }
+        // std::cout << std::endl ;
         // sort transaction by frequency
         sort(transaction.begin(), transaction.end(), [&frequency_by_item](Item a, Item b){
             return frequency_by_item[a] > frequency_by_item[b] ;
@@ -331,9 +335,22 @@ std::set<Pattern> mine_fptree(const FpTree& fptree)
                 item_node = item_node ->next_node_in_ht;
             }
 
+
+            if(curr_item == 3)
+            {
+                for(auto pt : conditional_pattern_base)
+                {
+                    std::cout << "??";
+                    for(auto x : pt.first)
+                    {
+                        std::cout << x << " " ;
+                    }
+                    std::cout << pt.second << std::endl;
+                }
+            }
+
             // build the conditional fptree using the generated condition transactions
             const FpTree conditional_fptree(conditional_pattern_base, fptree.minimum_support_threshold);
-
             // this is a recursive function call
             // gets the frequent patters in the conditional FPTree 
             std::set<Pattern> conditional_patterns = mine_fptree(conditional_fptree); // recursive function
@@ -357,6 +374,14 @@ std::set<Pattern> mine_fptree(const FpTree& fptree)
             for (const Pattern& pattern : conditional_patterns)
             {
                 Pattern new_pattern{pattern};
+                if (curr_item == 3)
+                {
+                    for(auto ele : pattern.first)
+                    {
+                        std::cout << "--" << ele << " ";
+                    }
+                    std::cout << pattern.second << std::endl;
+                }
                 new_pattern.first.insert(curr_item);
                 new_pattern.second = pattern.second;
                 curr_item_patterns.insert({new_pattern});
