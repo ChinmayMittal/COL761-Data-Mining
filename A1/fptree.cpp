@@ -38,22 +38,22 @@ FpNode::FpNode(const Item& item, const std::shared_ptr<FpNode>& parent):
 FpTree::FpTree(const std::vector<TransformedPrefixPath>& conditional_pattern_base, uint64_t minimum_support_threshold):
     root(std::make_shared<FpNode>(Item{}, nullptr)),
     header_table(),
+    item_frequencies(),
     minimum_support_threshold(minimum_support_threshold)
 {
     // TransformedPrefixPath is a path in the FP Tree corresponding to an item set and the frequency of that item set
     
     // scan the transactions counting the frequency of each item
-    std::map<Item, uint64_t> frequency_by_item;
     for ( const TransformedPrefixPath& tfp : conditional_pattern_base ) {
         for ( const Item& item : tfp.first ) {
-            frequency_by_item[item] += tfp.second;
+            item_frequencies[item] += tfp.second;
         }
     }
 
     // keep only items which have a frequency greater or equal than the minimum support threshold
-    for ( auto it = frequency_by_item.cbegin(); it != frequency_by_item.cend(); ) {
+    for ( auto it = item_frequencies.cbegin(); it != item_frequencies.cend(); ) {
         const uint64_t item_frequency = (*it).second;
-        if ( item_frequency < minimum_support_threshold ) { frequency_by_item.erase( it++ ); }
+        if ( item_frequency < minimum_support_threshold ) { item_frequencies.erase( it++ ); }
         else { ++it; }
     }
 
@@ -65,15 +65,15 @@ FpTree::FpTree(const std::vector<TransformedPrefixPath>& conditional_pattern_bas
         // remove infrequent items from the transaction database
         for(const Item& item : tfp.first)
         {
-            if(frequency_by_item.count(item))
+            if(item_frequencies.count(item))
             {
                 transaction.push_back(item);
             }
             
         }
         // sort transaction by frequency
-        sort(transaction.begin(), transaction.end(), [&frequency_by_item](Item a, Item b){
-            return frequency_by_item[a] > frequency_by_item[b] ;
+        sort(transaction.begin(), transaction.end(), [this](Item a, Item b){
+            return this->item_frequencies[a] > this->item_frequencies[b] ;
         });
 
         auto curr_fpnode = root;
@@ -117,6 +117,7 @@ FpTree::FpTree(const std::vector<TransformedPrefixPath>& conditional_pattern_bas
 
 FpTree::FpTree(const std::string& file_path, float minimum_support_threshold):
     root(std::make_shared<FpNode>(Item{}, nullptr)),
+    item_frequencies(),
     header_table()
 {
     std::ifstream input_file(file_path);
@@ -126,7 +127,6 @@ FpTree::FpTree(const std::string& file_path, float minimum_support_threshold):
         return ;
     }
 
-    std::map<Item, uint64_t> item_frequencies;
     // scan all the transactions to determine the frequencies of all elements
     std::string line;
     uint64_t total_transactions = 0;
@@ -181,8 +181,8 @@ FpTree::FpTree(const std::string& file_path, float minimum_support_threshold):
         }
         // printProgressBar(transactions_processed++, total_transactions, 100);
         // sort transaction by frequency
-        sort(transaction.begin(), transaction.end(), [&item_frequencies](Item a, Item b){
-            return item_frequencies[a] > item_frequencies[b] ;
+        sort(transaction.begin(), transaction.end(), [this](Item a, Item b){
+            return this->item_frequencies[a] > this->item_frequencies[b] ;
         });
 
         // add the transaction to the tree
@@ -251,10 +251,8 @@ bool containts_single_path(const FpTree& fptree)
     return fptree.empty() || containts_single_path(fptree.root);
 }
 
-// int cnt = 0 ; 
-std::set<Pattern> mine_fptree(const FpTree& fptree)
+std::vector<Pattern> mine_fptree(const FpTree& fptree)
 {
-    // std::cout << cnt ++ << std::endl ; 
     if (fptree.empty()){ return {};}
 
     if (containts_single_path(fptree))
@@ -262,7 +260,7 @@ std::set<Pattern> mine_fptree(const FpTree& fptree)
         // generate all possible combinationso of items in the trees
 
         // eg. if tree is A->B->C then we will generate A, B, C, AB, BC, AC, ABC 
-        std::set<Pattern> single_path_patterns;
+        std::vector<Pattern> single_path_patterns;
 
         // for each node in tree
         auto fpnode = (*(fptree.root->children.begin())).second;
@@ -274,7 +272,6 @@ std::set<Pattern> mine_fptree(const FpTree& fptree)
             // add a pattern formed by only the current node
             // this will be frequent because we removed infrequent single items from the 
             Pattern new_pattern{{item}, frequency};
-            single_path_patterns.insert(new_pattern);
 
             // create a new pattern by adding the item of the current node to all the previously generated patterns
             for( const Pattern& pattern : single_path_patterns )
@@ -282,8 +279,9 @@ std::set<Pattern> mine_fptree(const FpTree& fptree)
                 Pattern new_pattern = pattern;
                 new_pattern.first.insert(item);
                 new_pattern.second = frequency;
-                single_path_patterns.insert(new_pattern);
+                single_path_patterns.push_back(new_pattern);
             }
+            single_path_patterns.push_back(new_pattern);
             if (fpnode->children.size())
             {
                 fpnode = (*(fpnode->children.begin())).second;
@@ -296,7 +294,7 @@ std::set<Pattern> mine_fptree(const FpTree& fptree)
     else{
 
         // generaate conditional fptrees for each different item in the fptree
-        std::set<Pattern> multi_path_patterns ;
+        std::vector<Pattern> multi_path_patterns ;
 
         for (const auto & pair : fptree.header_table)
         {
@@ -336,22 +334,17 @@ std::set<Pattern> mine_fptree(const FpTree& fptree)
             const FpTree conditional_fptree(conditional_pattern_base, fptree.minimum_support_threshold);
             // this is a recursive function call
             // gets the frequent patters in the conditional FPTree 
-            std::set<Pattern> conditional_patterns = mine_fptree(conditional_fptree); // recursive function
+            std::vector<Pattern> conditional_patterns = mine_fptree(conditional_fptree); // recursive function
         
             // construct patterns relative to the current item using both the current item and the conditional patterns
-            std::set<Pattern> curr_item_patterns;
+            std::vector<Pattern> curr_item_patterns;
 
             // the first pattern is made only by the current item
             // compute the frequency of this pattern by summing the frequency of the nodes which have the same item (follow the node links)
-            uint64_t curr_item_frequency = 0; // will represent the total frequency of the current item 
-            auto fpnode = pair.second; // first node in the header_table of the first item
-            while ( fpnode ) {
-                curr_item_frequency += fpnode->frequency;
-                fpnode = fpnode->next_node_in_ht;
-            }
+            uint64_t curr_item_frequency = (*fptree.item_frequencies.find(curr_item)).second;
             // add the pattern as a result
             Pattern pattern{{ curr_item }, curr_item_frequency }; // this is a frequent pattern since we only considered frequent items 
-            curr_item_patterns.insert( pattern );
+            curr_item_patterns.push_back( pattern );
 
             // other patterns are generated recursively by adding the current item to the recursively generated patterns
             for (const Pattern& pattern : conditional_patterns)
@@ -359,11 +352,11 @@ std::set<Pattern> mine_fptree(const FpTree& fptree)
                 Pattern new_pattern{pattern};
                 new_pattern.first.insert(curr_item);
                 new_pattern.second = pattern.second;
-                curr_item_patterns.insert({new_pattern});
+                curr_item_patterns.push_back({new_pattern});
             }
 
             // join the patterns generated by the current item with all the other items of the fptree
-            multi_path_patterns.insert( curr_item_patterns.cbegin(), curr_item_patterns.cend() );
+            multi_path_patterns.insert(multi_path_patterns.end(), curr_item_patterns.cbegin(), curr_item_patterns.cend() );
         }
 
         return multi_path_patterns;

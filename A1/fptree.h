@@ -31,6 +31,7 @@ class FpTree
         std::shared_ptr<FpNode> root;
         std::map<Item, std::shared_ptr<FpNode>> header_table;
         std::map<Item, std::shared_ptr<FpNode>> last_node_in_header_table;
+        std::map<Item, uint64_t> item_frequencies;
         uint64_t minimum_support_threshold;
 
         FpTree(const std::string&, float);
@@ -39,7 +40,7 @@ class FpTree
         bool empty() const;
 };
 
-std::set<Pattern> mine_fptree(const FpTree&);
+std::vector<Pattern> mine_fptree(const FpTree&);
 
 
 #endif  // FPTREE_HPP

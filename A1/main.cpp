@@ -18,10 +18,23 @@ struct Pattern_comparator
     }
 };
 
+void print_patterns(std::vector<Pattern>& patterns)
+{
+    std::cout << "Number of Patterns: " << patterns.size() << "\n" ;
+    for(auto pattern: patterns)
+    {
+        for(auto ele : pattern.first)
+        {
+            std::cout << ele << ", " ;
+        }
+        std::cout << "->" << pattern.second << "\n"; 
+    }
+}
 void data_compression(std::string file_path, std::string compressed_file_path)
 {
 
-    std::vector<float> support_thresholds{1.0, 0.75, 0.5, 0.4, 0.3, 0.2, 0.1, 0.04, 0.01};
+    std::vector<float> support_thresholds{1.0, 0.75, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05, 0.01};
+    // std::vector<float> support_thresholds{0.45};
     std::map<std::set<int>, int> compression_dictionary ;
     std::string line ; int num ;
     int total_initial_terms = 0;
@@ -33,17 +46,9 @@ void data_compression(std::string file_path, std::string compressed_file_path)
     {
         final_items = 0;
         const FpTree fptree{current_file, support_thresholds[iter]};
-        std::set<Pattern> frequent_patterns = mine_fptree(fptree);
+        std::vector<Pattern> frequent_patterns = mine_fptree(fptree);
         std::cout << "Patterns Mined: " << frequent_patterns.size() << std::endl;
-
-        // for(auto pattern: frequent_patterns)
-        // {
-        //     for(auto ele : pattern.first)
-        //     {
-        //         std::cout << ele << ", " ;
-        //     }
-        //     std::cout << "->" << pattern.second << "\n"; 
-        // }
+        // print_patterns(frequent_patterns);
 
         std::ifstream input_file(current_file);
         std::ofstream outFile; // Declare a file stream object
