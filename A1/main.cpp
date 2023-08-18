@@ -10,11 +10,18 @@
 
 #include "fptree.h"
 
+struct Pattern_comparator
+{
+    bool operator ()(Pattern a, Pattern b) const
+    {
+        return (a.first.size() * (a.second - 1 )) > (b.first.size() * (b.second-1));
+    }
+};
 
-void data_compression(std::string file_path)
+void data_compression(std::string file_path, std::string compressed_file_path)
 {
 
-    std::vector<float> support_thresholds{1.0, 0.75, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05, 0.01};
+    std::vector<float> support_thresholds{1.0, 0.75, 0.5, 0.4, 0.3, 0.2, 0.1, 0.04, 0.01};
     std::map<std::set<int>, int> compression_dictionary ;
     std::string line ; int num ;
     int total_initial_terms = 0;
@@ -62,20 +69,12 @@ void data_compression(std::string file_path)
                 if(iter==0) total_initial_terms ++ ;
             }
 
+            // std::set<Pattern, Pattern_comparator> sorted_frequent_patterns(frequent_patterns.begin(), frequent_patterns.end());
             for(auto const &pattern : frequent_patterns) // define order of processing transactions
             {
                 if(pattern.first.size()>1 and pattern.second > 1)
-                {
-                    bool pattern_in_transaction = true;
-                    for(auto const ele : pattern.first)
-                    {
-                        if(transaction.find(ele) == transaction.end())
-                        {
-                            pattern_in_transaction = false;
-                        }
-                    }      break;
-                      
-                    if (pattern_in_transaction)
+                {     
+                    if (std::includes(transaction.begin(), transaction.end(), pattern.first.begin(), pattern.first.end()))
                     {
                         if (compression_dictionary.count(pattern.first) == 0)
                         {
@@ -123,7 +122,7 @@ void data_compression(std::string file_path)
     }
 
     // Rename the file
-    int result = std::rename(current_file.c_str(), "compressed.dat");
+    int result = std::rename(current_file.c_str(), compressed_file_path.c_str());
     result = std::remove( current_file == "output.dat" ? "output-1.dat" : "output.dat");
     std::cout << "Initial Items: " << total_initial_terms  << "\n";
     std::cout << "Final Items: " << final_items << "\n";
@@ -136,8 +135,9 @@ int main(int argc, const char *argv[])
     auto startTime = std::chrono::high_resolution_clock::now();
 
     std::string file_path = argv[1];
+    std::string compressed_file_path = argv[2];
     
-    data_compression(file_path);
+    data_compression(file_path, compressed_file_path);
     
     // Record the end time
     auto endTime = std::chrono::high_resolution_clock::now();

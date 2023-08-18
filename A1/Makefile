@@ -14,8 +14,14 @@ $(TARGET): $(OBJS)
 .PHONY: clean
 
 run: main
-	./main "/Users/chinmaymittal/Downloads/A1_datasets/D_medium2.dat"
-# ./main ./test.dat
+	./main "/Users/chinmaymittal/Downloads/A1_datasets/D_small.dat" ./compressed.dat
+# ./main ./test.dat ./compressed.dat
+
+run_decompress: decompress
+	./decompress ./compressed.dat ./decompressed.dat
+
+decompress: decompress.o
+	$(CXX) $(CXXFLAGS) $^ -o $@
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(TARGET) decompress decompress.o
