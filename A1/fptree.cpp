@@ -253,10 +253,16 @@ FpTree::FpTree(const std::vector<Transaction>& transactions, float minimum_suppo
     std::cout << "Support --> " << this->minimum_support_threshold << std::endl;
 
     // keep only items which have a frequency greater or equal than the minimum support threshold
-    for ( auto it = item_frequencies.cbegin(); it != item_frequencies.cend(); ) {
+    std::vector<Item> items_to_erase;
+    for ( auto it = item_frequencies.cbegin(); it != item_frequencies.cend(); it++) {
         const uint64_t item_frequency = (*it).second;
-        if ( item_frequency < minimum_support_threshold ) { item_frequencies.erase( it++ ); }
-        else { ++it; }
+        // if ( item_frequency < this->minimum_support_threshold ) { item_frequencies.erase( it++ ); }
+        // else { ++it; }
+        if(item_frequency < this->minimum_support_threshold) {items_to_erase.push_back((*it).first);}
+    }
+
+    for(const auto item : items_to_erase) {
+        item_frequencies.erase(item);
     }
 
     // start tree construction
@@ -264,13 +270,21 @@ FpTree::FpTree(const std::vector<Transaction>& transactions, float minimum_suppo
     // scan the transactions again
     for (Transaction transaction : transactions ) {
         // sort the transcation again by decreasing frequency
-        sort(transaction.begin(), transaction.end(), [this](Item a, Item b)
+        Transaction pruned_transcation;
+        for(auto ele : transaction)
+        {
+            if(item_frequencies.count(ele))
+            {
+                pruned_transcation.push_back(ele);
+            }
+        }
+        sort(pruned_transcation.begin(), pruned_transcation.end(), [this](Item a, Item b)
         {
             return this->item_frequencies[a] > this->item_frequencies[b];
         });
         auto curr_fpnode = root;
         // select and sort the frequent items in transaction according to the order of items_ordered_by_frequency
-        for (const Item& item : transaction ) {
+        for (const Item& item : pruned_transcation ) {
             // insert item in the tree
             // check if curr_fpnode has a child curr_fpnode_child such that curr_fpnode_child.item = item
             if ( curr_fpnode->children.find(item) == curr_fpnode->children.cend() ) {
@@ -350,17 +364,18 @@ std::vector<Pattern> mine_fptree(const FpTree& fptree)
 
             // add a pattern formed by only the current node
             // this will be frequent because we removed infrequent single items from the 
-            Pattern new_pattern{{item}, frequency};
+            Pattern single_item_pattern{{item}, frequency};
 
             // create a new pattern by adding the item of the current node to all the previously generated patterns
-            for( const Pattern& pattern : single_path_patterns )
+            int curr_size = single_path_patterns.size();
+            for( int idx = 0 ; idx < curr_size ; idx ++  )
             {
-                Pattern new_pattern = pattern;
+                Pattern new_pattern = single_path_patterns[idx];
                 new_pattern.first.insert(item);
                 new_pattern.second = frequency;
                 single_path_patterns.push_back(new_pattern);
             }
-            single_path_patterns.push_back(new_pattern);
+            single_path_patterns.push_back(single_item_pattern);
             if (fpnode->children.size())
             {
                 fpnode = (*(fpnode->children.begin())).second;
@@ -371,7 +386,6 @@ std::vector<Pattern> mine_fptree(const FpTree& fptree)
         return single_path_patterns;
     }
     else{
-
         // generaate conditional fptrees for each different item in the fptree
         std::vector<Pattern> multi_path_patterns ;
 
