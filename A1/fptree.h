@@ -39,7 +39,13 @@ class FpTree
         bool empty() const;
 };
 
-std::set<Pattern> mine_fptree(const FpTree&);
+struct Time_check
+{
+    bool stop_execution = true;
+    std::chrono::_V2::system_clock::time_point *start_mining = NULL;
+};
+
+std::set<Pattern> mine_fptree(const FpTree&, Time_check);
 
 
 #endif  // FPTREE_HPP

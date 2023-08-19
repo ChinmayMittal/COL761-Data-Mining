@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <chrono>
 
 #include "fptree.h"
 
@@ -252,8 +253,21 @@ bool containts_single_path(const FpTree& fptree)
 }
 
 // int cnt = 0 ; 
-std::set<Pattern> mine_fptree(const FpTree& fptree)
+std::set<Pattern> mine_fptree(const FpTree& fptree, Time_check t1)
 {
+    if(t1.stop_execution)
+    {
+        std::cout << "Here";
+        return {};
+    }
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end-*t1.start_mining;
+    if(elapsed_seconds.count() > 6.0)
+    {
+        std::cout << elapsed_seconds.count();
+        t1.stop_execution = true;
+        return {};
+    }
     // std::cout << cnt ++ << std::endl ; 
     if (fptree.empty()){ return {};}
 
@@ -336,7 +350,12 @@ std::set<Pattern> mine_fptree(const FpTree& fptree)
             const FpTree conditional_fptree(conditional_pattern_base, fptree.minimum_support_threshold);
             // this is a recursive function call
             // gets the frequent patters in the conditional FPTree 
-            std::set<Pattern> conditional_patterns = mine_fptree(conditional_fptree); // recursive function
+            std::set<Pattern> conditional_patterns = mine_fptree(conditional_fptree, t1); // recursive function
+            if(t1.stop_execution)
+            {
+                std::cout << "here2";
+                return {};
+            }
         
             // construct patterns relative to the current item using both the current item and the conditional patterns
             std::set<Pattern> curr_item_patterns;

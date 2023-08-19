@@ -14,7 +14,7 @@ $(TARGET): $(OBJS)
 .PHONY: clean
 
 run: main
-	./main "/Users/chinmaymittal/Downloads/A1_datasets/D_small.dat" ./compressed.dat
+	./main "/home/parth/A1_datasets/D_medium.dat" ./compressed.dat
 # ./main ./test.dat ./compressed.dat
 
 run_decompress: decompress

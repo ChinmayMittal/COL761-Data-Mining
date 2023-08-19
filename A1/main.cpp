@@ -7,8 +7,11 @@
 #include <fstream>
 #include <sstream>
 #include <cstdio>
+#include <bits/stdc++.h>
 
 #include "fptree.h"
+
+using namespace std;
 
 struct Pattern_comparator
 {
@@ -29,12 +32,47 @@ void data_compression(std::string file_path, std::string compressed_file_path)
     int replacement_value = -1;
     std::string current_file = file_path;
 
-    for(int iter = 0 ; iter < support_thresholds.size(); iter++)
+    bool stop = false;
+
+    // for(int iter = 0 ; iter < support_thresholds.size(); iter++)
+    float iter = 1.14;
+    float iter_diff = 0.1;
+    long prev_increase[2] = {INT32_MAX, INT32_MAX};
+    int past_frequent_patterns[2] = {0, 0};
+    float huris1 = 7.0, huris2 = 1.3;
+    while(!stop)
     {
+        prev_increase[1] = prev_increase[0];
+        prev_increase[0] = past_frequent_patterns[0] - past_frequent_patterns[1] + 1;
+        past_frequent_patterns[1] = past_frequent_patterns[0];
+        if(prev_increase[0]/prev_increase[1] > huris1)
+        {
+            iter_diff = iter_diff*0.7;
+        }
+        else if(prev_increase[0]/prev_increase[1] < huris2)
+        {
+            iter_diff = iter_diff*1.4;
+        }
+        iter_diff = min(1.0*iter_diff, iter*0.7);
+        iter -= iter_diff;
+
+
         final_items = 0;
-        const FpTree fptree{current_file, support_thresholds[iter]};
-        std::set<Pattern> frequent_patterns = mine_fptree(fptree);
+        const FpTree fptree{current_file, iter};
+
+
+
+        auto start = std::chrono::system_clock::now();
+        Time_check t1;
+        t1.start_mining = &start;
+        t1.stop_execution = false;
+        std::set<Pattern> frequent_patterns = mine_fptree(fptree, t1);
+        if(t1.stop_execution || iter <= 0.001)
+        {
+            stop = true;
+        }
         std::cout << "Patterns Mined: " << frequent_patterns.size() << std::endl;
+        past_frequent_patterns[0] = frequent_patterns.size();
 
         // for(auto pattern: frequent_patterns)
         // {
@@ -70,6 +108,8 @@ void data_compression(std::string file_path, std::string compressed_file_path)
             }
 
             // std::set<Pattern, Pattern_comparator> sorted_frequent_patterns(frequent_patterns.begin(), frequent_patterns.end());
+            if(!stop)
+            {
             for(auto const &pattern : frequent_patterns) // define order of processing transactions
             {
                 if(pattern.first.size()>1 and pattern.second > 1)
@@ -87,6 +127,14 @@ void data_compression(std::string file_path, std::string compressed_file_path)
                         transaction.insert(compression_dictionary[pattern.first]);
                     }
                 }
+                auto end = std::chrono::system_clock::now();
+                std::chrono::duration<double> elapsed_seconds = end-*t1.start_mining;
+                if(elapsed_seconds.count() > 30.0)
+                {
+                    stop = true;
+                    break;
+                }
+            }
             }
 
             for(auto ele : transaction)
