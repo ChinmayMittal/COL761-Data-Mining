@@ -253,20 +253,13 @@ FpTree::FpTree(const std::vector<Transaction>& transactions, float minimum_suppo
     std::cout << "Support --> " << this->minimum_support_threshold << std::endl;
 
     // keep only items which have a frequency greater or equal than the minimum support threshold
-    std::vector<Item> items_to_erase;
-    for ( auto it = item_frequencies.cbegin(); it != item_frequencies.cend(); it++) {
+    for ( auto it = item_frequencies.cbegin(); it != item_frequencies.cend();) {
         const uint64_t item_frequency = (*it).second;
-        // if ( item_frequency < this->minimum_support_threshold ) { item_frequencies.erase( it++ ); }
-        // else { ++it; }
-        if(item_frequency < this->minimum_support_threshold) {items_to_erase.push_back((*it).first);}
-    }
-
-    for(const auto item : items_to_erase) {
-        item_frequencies.erase(item);
+        if ( item_frequency < this->minimum_support_threshold ) { item_frequencies.erase( it++ ); }
+        else { ++it; }
     }
 
     // start tree construction
-
     // scan the transactions again
     for (Transaction transaction : transactions ) {
         // sort the transcation again by decreasing frequency

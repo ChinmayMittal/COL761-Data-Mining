@@ -34,8 +34,8 @@ void data_compression(std::string file_path, std::string compressed_file_path)
 {
 
     // std::vector<float> support_thresholds{1.0, 0.9, 0.75, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2, 0.15, 0.1, 0.075,0.05, 0.025, 0.01, 0.005};÷
-    std::vector<float> support_thresholds{1.0, 0.9, 0.75, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2, 0.175, 0.15, 0.125, 0.1};
-    // std::vector<float> support_thresholds{0.45};
+    // std::vector<float> support_thresholds{1.0, 0.9, 0.75, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2, 0.175, 0.15, 0.125, 0.1};
+    std::vector<float> support_thresholds{0.45};
     std::map<std::set<int>, int> compression_dictionary ;
     std::vector<Transaction> transactions; // stores the current state of the transactions
     std::string line ; int num ;
@@ -50,7 +50,7 @@ void data_compression(std::string file_path, std::string compressed_file_path)
         std::cerr << "Failed to open the file." << std::endl;
         return ;
     }
-
+    // store transactions from disk
     while(std::getline(input_file, line))
     {
         Transaction transaction;
@@ -63,9 +63,8 @@ void data_compression(std::string file_path, std::string compressed_file_path)
         }
         transactions.push_back(transaction);
     }
-    std::cout << transactions.size();
-
     input_file.close();
+
 
 
     for(int iter = 0 ; iter < support_thresholds.size(); iter++)
@@ -114,7 +113,7 @@ void data_compression(std::string file_path, std::string compressed_file_path)
     outFile.open(compressed_file_path, std::ofstream::out | std::ofstream::app);
     if (!outFile.is_open()) {
         std::cerr << "Error opening file." << std::endl;
-        return ; // Return an error code
+        return ;
     }
     for(auto const &transaction : transactions)
     {
@@ -137,11 +136,9 @@ void data_compression(std::string file_path, std::string compressed_file_path)
         }
         outFile << "\n";
     }
-
     outFile.close();
 
-    // Rename the file
-
+    // Print Statistics
     std::cout << "Initial Items: " << total_initial_terms  << "\n";
     std::cout << "Final Items: " << final_items << "\n";
     std::cout << "Compression Ratio: " << float(final_items)/total_initial_terms*100  << "\n";
