@@ -33,9 +33,12 @@ class FpTree
         std::map<Item, std::shared_ptr<FpNode>> last_node_in_header_table;
         std::map<Item, uint64_t> item_frequencies;
         uint64_t minimum_support_threshold;
+        uint64_t total_transactions;
+        uint64_t total_items;
 
         FpTree(const std::string&, float);
         FpTree(const std::vector<TransformedPrefixPath>& transactions, uint64_t);
+        FpTree(const std::vector<Transaction>&, float);
 
         bool empty() const;
 };

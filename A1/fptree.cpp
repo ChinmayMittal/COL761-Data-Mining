@@ -42,11 +42,14 @@ FpTree::FpTree(const std::vector<TransformedPrefixPath>& conditional_pattern_bas
     minimum_support_threshold(minimum_support_threshold)
 {
     // TransformedPrefixPath is a path in the FP Tree corresponding to an item set and the frequency of that item set
-    
+    this->total_transactions = 0;
+    this->total_items = 0;
     // scan the transactions counting the frequency of each item
     for ( const TransformedPrefixPath& tfp : conditional_pattern_base ) {
+        this->total_transactions += tfp.second;
         for ( const Item& item : tfp.first ) {
             item_frequencies[item] += tfp.second;
+            this->total_items += tfp.second;
         }
     }
 
@@ -130,6 +133,7 @@ FpTree::FpTree(const std::string& file_path, float minimum_support_threshold):
     // scan all the transactions to determine the frequencies of all elements
     std::string line;
     uint64_t total_transactions = 0;
+    this->total_items=0;
     while (std::getline(input_file, line)) {
         // process transactions
         int num;
@@ -138,10 +142,12 @@ FpTree::FpTree(const std::string& file_path, float minimum_support_threshold):
         while (iss >> num) {
             Item item{num};
             item_frequencies[item] ++;
+            this->total_items++ ;
         }
         total_transactions ++;
     }
     input_file.close();
+    this->total_transactions = total_transactions;
 
 
     this->minimum_support_threshold = int(minimum_support_threshold*total_transactions);
@@ -225,6 +231,79 @@ FpTree::FpTree(const std::string& file_path, float minimum_support_threshold):
 
     input_f.close();
 
+}
+
+FpTree::FpTree(const std::vector<Transaction>& transactions, float minimum_support_threshold) :
+    root(std::make_shared<FpNode>( Item{}, nullptr ) ),
+    header_table(),
+    item_frequencies()
+{
+    // scan the transactions counting the frequency of each item
+    this->total_transactions = transactions.size();
+    this->total_items = 0;
+
+    for ( const Transaction& transaction : transactions ) {
+        for ( const Item& item : transaction ) {
+            ++item_frequencies[item];
+            this->total_items ++ ;
+        }
+    }
+
+    this->minimum_support_threshold = int(minimum_support_threshold*(this->total_transactions));
+    std::cout << "Support --> " << this->minimum_support_threshold << std::endl;
+
+    // keep only items which have a frequency greater or equal than the minimum support threshold
+    for ( auto it = item_frequencies.cbegin(); it != item_frequencies.cend(); ) {
+        const uint64_t item_frequency = (*it).second;
+        if ( item_frequency < minimum_support_threshold ) { item_frequencies.erase( it++ ); }
+        else { ++it; }
+    }
+
+    // start tree construction
+
+    // scan the transactions again
+    for (Transaction transaction : transactions ) {
+        // sort the transcation again by decreasing frequency
+        sort(transaction.begin(), transaction.end(), [this](Item a, Item b)
+        {
+            return this->item_frequencies[a] > this->item_frequencies[b];
+        });
+        auto curr_fpnode = root;
+        // select and sort the frequent items in transaction according to the order of items_ordered_by_frequency
+        for (const Item& item : transaction ) {
+            // insert item in the tree
+            // check if curr_fpnode has a child curr_fpnode_child such that curr_fpnode_child.item = item
+            if ( curr_fpnode->children.find(item) == curr_fpnode->children.cend() ) {
+                // the child doesn't exist, create a new node
+                const auto new_fp_node_child = std::make_shared<FpNode>( item, curr_fpnode );
+
+                // add the new node to the tree
+                curr_fpnode->children[item] = (new_fp_node_child) ;
+
+                // update the node-link structure
+                if ( header_table.count(item)) {
+                    last_node_in_header_table[item]->next_node_in_ht = new_fp_node_child;
+                    last_node_in_header_table[item] = new_fp_node_child;
+                }
+                else {
+                    header_table[item] = new_fp_node_child;
+                    last_node_in_header_table[item] = new_fp_node_child;
+                }
+
+                // advance to the next node of the current transaction
+                curr_fpnode = new_fp_node_child;
+            }
+            else {
+                // the child exist, increment its frequency
+                auto fp_node_child = curr_fpnode->children[item];
+                ++fp_node_child->frequency;
+
+                // advance to the next node of the current transaction
+                curr_fpnode = fp_node_child;
+            }
+            
+        }
+    }
 }
 
 bool FpTree::empty() const

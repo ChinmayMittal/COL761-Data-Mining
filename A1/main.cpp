@@ -33,13 +33,15 @@ void print_patterns(std::vector<Pattern>& patterns)
 void data_compression(std::string file_path, std::string compressed_file_path)
 {
 
-    std::vector<float> support_thresholds{1.0, 0.75, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05, 0.01};
+    // std::vector<float> support_thresholds{1.0, 0.9, 0.75, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2, 0.15, 0.1, 0.075,0.05, 0.025, 0.01, 0.005};÷
+    std::vector<float> support_thresholds{1.0, 0.9, 0.75, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2, 0.15, 0.1};
     // std::vector<float> support_thresholds{0.45};
     std::map<std::set<int>, int> compression_dictionary ;
     std::string line ; int num ;
     int total_initial_terms = 0;
     int final_items = 0;
     int replacement_value = -1;
+
     std::string current_file = file_path;
 
     for(int iter = 0 ; iter < support_thresholds.size(); iter++)
@@ -57,10 +59,20 @@ void data_compression(std::string file_path, std::string compressed_file_path)
             return ;
         }
 
-        outFile.open( (current_file == file_path || current_file == "output-1.dat" ) ? "output.dat" : "output-1.dat" , std::ofstream::out | std::ofstream::trunc);
+        outFile.open((current_file == file_path || current_file == "output-1.dat" ) ? "output.dat" : "output-1.dat" , std::ofstream::out | std::ofstream::trunc);
         if (!outFile.is_open()) {
             std::cerr << "Error opening file." << std::endl;
             return ; // Return an error code
+        }
+
+        if(frequent_patterns.size() < fptree.total_transactions * 0.0001)
+        {
+            if(iter == 0)
+                total_initial_terms = fptree.total_items;
+            input_file.close();
+            outFile.close();
+            std::cout << "Skipping support, too few frequent patterns \n";
+            continue;
         }
 
 
@@ -128,7 +140,19 @@ void data_compression(std::string file_path, std::string compressed_file_path)
 
     // Rename the file
     int result = std::rename(current_file.c_str(), compressed_file_path.c_str());
+    if (result == 0) {
+        std::cout << "File renamed successfully." << std::endl;
+    } else {
+        std::cerr << "Error renaming file." << std::endl;
+        return ;
+    }
     result = std::remove( current_file == "output.dat" ? "output-1.dat" : "output.dat");
+    if (result == 0) {
+        std::cout << "File deleted successfully." << std::endl;
+    } else {
+        std::cerr << "Error deleting file." << std::endl;
+        return ;
+    }
     std::cout << "Initial Items: " << total_initial_terms  << "\n";
     std::cout << "Final Items: " << final_items << "\n";
     std::cout << "Compression Ratio: " << float(final_items)/total_initial_terms*100  << "\n";
