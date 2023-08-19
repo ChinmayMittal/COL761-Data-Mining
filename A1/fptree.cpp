@@ -346,7 +346,7 @@ std::vector<Pattern> mine_fptree(const FpTree& fptree, Time_check &start_time)
 
     auto current_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_time = std::chrono::duration_cast<std::chrono::duration<double>>(current_time - *(start_time.start_time));
-    if (elapsed_time > std::chrono::seconds(600))
+    if (elapsed_time > std::chrono::seconds(450))
     {
         std::cout << "Function exceeded the maximum allowed execution time." << std::endl;
         start_time.stop_execution = true;
@@ -436,7 +436,7 @@ std::vector<Pattern> mine_fptree(const FpTree& fptree, Time_check &start_time)
             std::vector<Pattern> conditional_patterns = mine_fptree(conditional_fptree, start_time); // recursive function
             if(start_time.stop_execution)
             {
-                return conditional_patterns;
+                return multi_path_patterns;
             }
         
             // construct patterns relative to the current item using both the current item and the conditional patterns

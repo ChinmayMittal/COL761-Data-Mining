@@ -33,7 +33,7 @@ void print_patterns(std::vector<Pattern>& patterns)
 void data_compression(std::string file_path, std::string compressed_file_path)
 {
 
-    std::vector<float> support_thresholds{1.0, 0.9, 0.75, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2, 0.15, 0.1, 0.075, 0.05, 0.025, 0.01, 0.005};
+    std::vector<float> support_thresholds{1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.35, 0.3, 0.25, 0.2, 0.175, 0.15, 0.125, 0.1, 0.075, 0.05, 0.025, 0.01, 0.005, 0.001};
     // std::vector<float> support_thresholds{1.0, 0.9, 0.75, 0.6, 0.5, 0.4, 0.3, 0.25};
     // std::vector<float> support_thresholds{0.45};
     std::map<std::set<int>, int> compression_dictionary ;
@@ -66,22 +66,33 @@ void data_compression(std::string file_path, std::string compressed_file_path)
     input_file.close();
 
 
+    auto algo_start_time = std::chrono::high_resolution_clock::now();
 
     for(int iter = 0 ; iter < support_thresholds.size(); iter++)
     {
-        const FpTree fptree{transactions, support_thresholds[iter]};
         auto start_time = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double> elapsed_time = std::chrono::duration_cast<std::chrono::duration<double>>(start_time - algo_start_time);
+        if (elapsed_time > std::chrono::seconds(1800))
+        {
+            std::cout << "Algorithm exceeded the maximum allowed execution time." << std::endl;
+            break;
+        }
+
+        const FpTree fptree{transactions, support_thresholds[iter]};
+        
         Time_check t1;
         t1.start_time = &start_time;
         t1.stop_execution = false;
-
         std::vector<Pattern> frequent_patterns = mine_fptree(fptree, t1);
+        
         std::cout << "Patterns Mined: " << frequent_patterns.size() << std::endl;
         // print_patterns(frequent_patterns);
 
-        if(!t1.stop_execution and (frequent_patterns.size() < fptree.total_transactions * 0.0001))
+        if(!t1.stop_execution and (frequent_patterns.size() < std::min(fptree.total_transactions * 0.00025, 1000.0)))
         {
             std::cout << "Skipping support, too few frequent patterns \n";
+            iter++;
             continue;
         }
 
@@ -101,7 +112,7 @@ void data_compression(std::string file_path, std::string compressed_file_path)
             std::set<int> sorted_transaction(transactions[transaction_id].begin(), transactions[transaction_id].end()) ;
 
             // std::set<Pattern, Pattern_comparator> sorted_frequent_patterns(frequent_patterns.begin(), frequent_patterns.end());
-            for(int idx = 0 ; idx < frequent_patterns.size() ; idx ++) // define order of processing transactions
+            for(int idx = 0 ; idx < std::min(10000, (int)frequent_patterns.size()) ; idx ++) // define order of processing transactions
             {
                 if(pattern_sizes[idx].first == 1) break;
                 Pattern &pattern = frequent_patterns[pattern_sizes[idx].second];
