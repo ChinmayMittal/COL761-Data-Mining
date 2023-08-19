@@ -33,9 +33,9 @@ void print_patterns(std::vector<Pattern>& patterns)
 void data_compression(std::string file_path, std::string compressed_file_path)
 {
 
-    // std::vector<float> support_thresholds{1.0, 0.9, 0.75, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2, 0.15, 0.1, 0.075,0.05, 0.025, 0.01, 0.005};÷
-    // std::vector<float> support_thresholds{1.0, 0.9, 0.75, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2, 0.175, 0.15, 0.125, 0.1};
-    std::vector<float> support_thresholds{0.45};
+    std::vector<float> support_thresholds{1.0, 0.9, 0.75, 0.6, 0.5, 0.4, 0.3, 0.25, 0.2, 0.15, 0.1, 0.075, 0.05, 0.025, 0.01, 0.005};
+    // std::vector<float> support_thresholds{1.0, 0.9, 0.75, 0.6, 0.5, 0.4, 0.3, 0.25};
+    // std::vector<float> support_thresholds{0.45};
     std::map<std::set<int>, int> compression_dictionary ;
     std::vector<Transaction> transactions; // stores the current state of the transactions
     std::string line ; int num ;
@@ -70,15 +70,30 @@ void data_compression(std::string file_path, std::string compressed_file_path)
     for(int iter = 0 ; iter < support_thresholds.size(); iter++)
     {
         const FpTree fptree{transactions, support_thresholds[iter]};
-        std::vector<Pattern> frequent_patterns = mine_fptree(fptree);
+        auto start_time = std::chrono::high_resolution_clock::now();
+        Time_check t1;
+        t1.start_time = &start_time;
+        t1.stop_execution = false;
+
+        std::vector<Pattern> frequent_patterns = mine_fptree(fptree, t1);
         std::cout << "Patterns Mined: " << frequent_patterns.size() << std::endl;
         // print_patterns(frequent_patterns);
 
-        if(frequent_patterns.size() < fptree.total_transactions * 0.0001)
+        if(!t1.stop_execution and (frequent_patterns.size() < fptree.total_transactions * 0.0001))
         {
             std::cout << "Skipping support, too few frequent patterns \n";
             continue;
         }
+
+        // size of pattern, id of pattern
+        std::vector<std::pair<int, int>> pattern_sizes;
+        for(int idx = 0 ; idx < frequent_patterns.size(); idx++)
+        {
+            pattern_sizes.push_back({frequent_patterns[idx].first.size(), idx});
+        }
+
+        // sort patterns by reverse order of size
+        std::sort(pattern_sizes.begin(), pattern_sizes.end(), std::greater<std::pair<int,int>>());
 
         for (int transaction_id = 0 ; transaction_id < transactions.size() ; transaction_id++ ) {
             // process transactions
@@ -86,8 +101,10 @@ void data_compression(std::string file_path, std::string compressed_file_path)
             std::set<int> sorted_transaction(transactions[transaction_id].begin(), transactions[transaction_id].end()) ;
 
             // std::set<Pattern, Pattern_comparator> sorted_frequent_patterns(frequent_patterns.begin(), frequent_patterns.end());
-            for(auto const &pattern : frequent_patterns) // define order of processing transactions
+            for(int idx = 0 ; idx < frequent_patterns.size() ; idx ++) // define order of processing transactions
             {
+                if(pattern_sizes[idx].first == 1) break;
+                Pattern &pattern = frequent_patterns[pattern_sizes[idx].second];
                 if(pattern.first.size()>1 and pattern.second > 1)
                 {     
                     if (std::includes(sorted_transaction.begin(), sorted_transaction.end(), pattern.first.begin(), pattern.first.end()))
@@ -107,24 +124,20 @@ void data_compression(std::string file_path, std::string compressed_file_path)
             // new compressed transaction
             transactions[transaction_id] = std::vector<Item>(sorted_transaction.begin(), sorted_transaction.end());
         }
+    
+        if (t1.stop_execution)
+        {
+            std::cout << "Terminating Compression, TLE\n";
+            break;
+        }
     }
 
     std::ofstream outFile; // Declare a file stream object
-    outFile.open(compressed_file_path, std::ofstream::out | std::ofstream::app);
+    outFile.open(compressed_file_path);
     if (!outFile.is_open()) {
         std::cerr << "Error opening file." << std::endl;
         return ;
     }
-    for(auto const &transaction : transactions)
-    {
-        for(auto const &item : transaction)
-        {
-            outFile << item << " ";
-            final_items ++ ;
-        }
-        outFile << "\n";
-    }
-    outFile << "\n" ;
     for(auto pair : compression_dictionary)
     {
         outFile << pair.second << " ";
@@ -136,6 +149,17 @@ void data_compression(std::string file_path, std::string compressed_file_path)
         }
         outFile << "\n";
     }
+    outFile << "\n" ;
+    for(auto const &transaction : transactions)
+    {
+        for(auto const &item : transaction)
+        {
+            outFile << item << " ";
+            final_items ++ ;
+        }
+        outFile << "\n";
+    }
+
     outFile.close();
 
     // Print Statistics
