@@ -34,7 +34,7 @@ void print_patterns(std::vector<Pattern>& patterns)
 void data_compression(std::string file_path, std::string compressed_file_path)
 {
 
-    std::vector<float> support_thresholds{1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.35, 0.3, 0.25, 0.2, 0.175, 0.15, 0.125, 0.1, 0.075, 0.05, 0.025, 0.01, 0.005, 0.001};
+    std::vector<float> support_thresholds{1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.35, 0.3, 0.25, 0.2, 0.175, 0.15, 0.125, 0.1, 0.075, 0.05, 0.025, 0.01, 0.005, 0.0025, 0.001};
     // std::vector<float> support_thresholds{1.0, 0.9, 0.75, 0.6, 0.5, 0.4, 0.3, 0.25};
     // std::vector<float> support_thresholds{0.45};
     std::map<std::set<int>, int> compression_dictionary ;
@@ -43,6 +43,7 @@ void data_compression(std::string file_path, std::string compressed_file_path)
     int total_initial_terms = 0; // total integers in the input file
     int final_items = 0; // total integers in the output file
     int replacement_value = -1; // current key for replacement
+    float past_thresh = -1;
 
     // read transactions from file
     std::ifstream input_file(file_path);
@@ -80,14 +81,27 @@ void data_compression(std::string file_path, std::string compressed_file_path)
             break;
         }
 
-        const FpTree fptree{transactions, support_thresholds[iter]};
+        FpTree fptree{transactions, support_thresholds[iter]};
         
         Time_check t1;
         t1.start_time = &start_time;
         t1.stop_execution = false;
         std::vector<Pattern> frequent_patterns = mine_fptree(fptree, t1);
-        
         std::cout << "Patterns Mined: " << frequent_patterns.size() << std::endl;
+        float curr_thresh = support_thresholds[iter];
+        int used_while = 0;
+        
+        while(frequent_patterns.size() > 10000 && iter > 0)
+        {
+            const FpTree fptree2{transactions, (curr_thresh + past_thresh)/2};
+            curr_thresh = (curr_thresh + past_thresh)/2;
+            fptree = fptree2;
+            used_while = 1;
+            frequent_patterns = mine_fptree(fptree, t1);
+            std::cout << "Patterns Mined: " << frequent_patterns.size() << std::endl;
+        }
+        past_thresh = curr_thresh;
+        iter -= used_while;
         // print_patterns(frequent_patterns);
 
         if(!t1.stop_execution and (frequent_patterns.size() < std::min(fptree.total_transactions * 0.0003, 1000.0)))
