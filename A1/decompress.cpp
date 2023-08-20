@@ -18,6 +18,7 @@ void decompress(std::string decompressed_file_path, std::string compressed_file_
 {
     std::string line; int num ;
     std::map<int, std::set<int>, keyComparator> conversion_dictionary;
+    std::map<int, std::set<int>, keyComparator> new_conversion_dictionary;
     std::ifstream compressed_file(compressed_file_path);
 
     if (!compressed_file.is_open()) {
@@ -32,12 +33,12 @@ void decompress(std::string decompressed_file_path, std::string compressed_file_
         return ; // Return an error code
     }
 
-
-    bool dictionary_started = false;
+    bool dictionary_ended = false;
     while(std::getline(compressed_file, line))
     {
-        if(dictionary_started)
+        if(!dictionary_ended)
         {
+            // store dictionary
             int key;
             std::istringstream iss(line);
             iss >> key ;;
@@ -45,52 +46,43 @@ void decompress(std::string decompressed_file_path, std::string compressed_file_
             {
                 conversion_dictionary[key].insert(num);
             }
+        }else{
+            // process compressed transactions
+            std::istringstream iss(line);
+            while(iss>>num)
+            {
+                if(num > 0)
+                {
+                    outFile << num << " ";
+                }else{
+                    for(auto ele : new_conversion_dictionary[num])
+                        outFile << ele << " ";
+                }
+            }
+            outFile << "\n" ;
         }
         
-        if(!dictionary_started and line.length() == 0)
+        if(!dictionary_ended and line.length() == 0)
         {
-            dictionary_started = true;
-        }
-    }
-    std::map<int, std::set<int>, keyComparator> new_conversion_dictionary;
-    for(auto const &pr : conversion_dictionary)
-    {
-        for(auto ele : pr.second)
-        {
-            if (ele < 0)
+            dictionary_ended = true;
+            // decompress dictionary
+            for(auto const &pr : conversion_dictionary)
             {
-                for(auto element : new_conversion_dictionary[ele])
+                for(auto ele : pr.second)
                 {
-                    new_conversion_dictionary[pr.first].insert(element);
+                    if (ele < 0)
+                    {
+                        for(auto element : new_conversion_dictionary[ele])
+                        {
+                            new_conversion_dictionary[pr.first].insert(element);
+                        }
+                    }else{
+                        new_conversion_dictionary[pr.first].insert(ele);
+                    }
                 }
-            }else{
-                new_conversion_dictionary[pr.first].insert(ele);
             }
+            conversion_dictionary.clear();
         }
-    }
-    conversion_dictionary.clear();
-
-    compressed_file.clear();
-    compressed_file.seekg(0, std::ios::beg);
-
-    while(std::getline(compressed_file, line))
-    {
-        if(line.length() == 0)
-        {
-            break;
-        }
-        std::istringstream iss(line);
-        while(iss>>num)
-        {
-            if(num > 0)
-            {
-                outFile << num << " ";
-            }else{
-                for(auto ele : new_conversion_dictionary[num])
-                    outFile << ele << " ";
-            }
-        }
-        outFile << "\n" ;
     }
 
     compressed_file.close();
