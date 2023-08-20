@@ -1,3 +1,4 @@
+#include <bits/stdc++.h>
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
@@ -89,7 +90,7 @@ void data_compression(std::string file_path, std::string compressed_file_path)
         std::cout << "Patterns Mined: " << frequent_patterns.size() << std::endl;
         // print_patterns(frequent_patterns);
 
-        if(!t1.stop_execution and (frequent_patterns.size() < std::min(fptree.total_transactions * 0.00025, 1000.0)))
+        if(!t1.stop_execution and (frequent_patterns.size() < std::min(fptree.total_transactions * 0.0003, 1000.0)))
         {
             std::cout << "Skipping support, too few frequent patterns \n";
             iter++;
@@ -100,7 +101,7 @@ void data_compression(std::string file_path, std::string compressed_file_path)
         std::vector<std::pair<int, int>> pattern_sizes;
         for(int idx = 0 ; idx < frequent_patterns.size(); idx++)
         {
-            pattern_sizes.push_back({frequent_patterns[idx].first.size(), idx});
+            pattern_sizes.push_back({frequent_patterns[idx].first.size() * (frequent_patterns[idx].second-1), idx});
         }
 
         // sort patterns by reverse order of size

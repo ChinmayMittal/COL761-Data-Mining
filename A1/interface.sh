@@ -1,5 +1,5 @@
 #!/bin/bash
-
+module load compiler/gcc/9.1.0
 # Check if the required number of arguments is provided
 if [ $# -lt 3 ]; then
     echo "Usage: $0 <C/D> <input_file> <output_file>"
