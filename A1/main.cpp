@@ -101,7 +101,7 @@ void data_compression(std::string file_path, std::string compressed_file_path)
         std::vector<std::pair<int, int>> pattern_sizes;
         for(int idx = 0 ; idx < frequent_patterns.size(); idx++)
         {
-            pattern_sizes.push_back({frequent_patterns[idx].first.size() * (frequent_patterns[idx].second-1), idx});
+            pattern_sizes.push_back({(frequent_patterns[idx].first.size() - 1) * (frequent_patterns[idx].second-1), idx});
         }
 
         // sort patterns by reverse order of size
@@ -109,13 +109,13 @@ void data_compression(std::string file_path, std::string compressed_file_path)
 
         for (int transaction_id = 0 ; transaction_id < transactions.size() ; transaction_id++ ) {
             // process transactions
-            std::istringstream iss(line);
+            // std::istringstream iss(line);
             std::set<int> sorted_transaction(transactions[transaction_id].begin(), transactions[transaction_id].end()) ;
 
             // std::set<Pattern, Pattern_comparator> sorted_frequent_patterns(frequent_patterns.begin(), frequent_patterns.end());
             for(int idx = 0 ; idx < std::min(10000, (int)frequent_patterns.size()) ; idx ++) // define order of processing transactions
             {
-                if(pattern_sizes[idx].first == 1) break;
+                if(pattern_sizes[idx].first - 2 <= 0) break;
                 Pattern &pattern = frequent_patterns[pattern_sizes[idx].second];
                 if(pattern.first.size()>1 and pattern.second > 1)
                 {     
