@@ -36,14 +36,18 @@ void find_error(string file1, string file2){
     ll num = transactions1.size();
 
     for(ll i = 0;i<num;i++){
-        auto transaction1 = transactions1[i];
-        auto transaction2 = transactions2[i];
-        if(transaction1.size() != transaction2.size()){
-            cout<<"Size of " << i+1 << "transaction doesnt match"<<"\n";
+        auto trans1 = transactions1[i];
+        auto trans2 = transactions2[i];
+        set<ll> tr1(trans1.begin(),trans1.end());
+        set<ll> tr2(trans2.begin(),trans2.end());
+        vector<ll> transaction1(tr1.begin(),tr1.end());
+        vector<ll> transaction2(tr2.begin(),tr2.end());
+        if(tr1.size() != tr2.size()){
+            cout<<"Size of " << i+1 << " transaction doesnt match"<<"\n";
             return;
         }
-        sort(transaction1.begin(),transaction1.end());
-        sort(transaction2.begin(),transaction2.end());
+        // sort(transaction1.begin(),transaction1.end());
+        // sort(transaction2.begin(),transaction2.end());
         ll tr_size = transaction1.size();
         for(ll j = 0;j<tr_size;j++){
             if(transaction1[j] != transaction2[j]){
@@ -60,8 +64,8 @@ void find_error(string file1, string file2){
 
 
 int main(){
-    string file1 = "D_small.dat";
-    string file2 = "decompressed.dat";
+    string file1 = "D_medium.dat";
+    string file2 = "decompressed_output_medium.dat";
     find_error(file1,file2);
     return 0;
 }
