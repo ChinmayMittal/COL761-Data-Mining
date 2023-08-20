@@ -7,6 +7,7 @@
 #include <fstream>
 #include <sstream>
 #include <cstdio>
+#include <bits/stdc++.h>
 
 #include "fptree.h"
 
@@ -32,8 +33,9 @@ void print_patterns(std::vector<Pattern>& patterns)
 }
 void data_compression(std::string file_path, std::string compressed_file_path)
 {
-
-    std::vector<float> support_thresholds{1.0, 0.75, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05, 0.01};
+    // std::vector<float> support_thresholds{1.0,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.15,0.1,0.05,0.01};
+    std::vector<float> support_thresholds{0.2};
+    // std::vector<float> support_thresholds{1.0, 0.75, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05, 0.01};
     // std::vector<float> support_thresholds{0.45};
     std::map<std::set<int>, int> compression_dictionary ;
     std::string line ; int num ;
@@ -48,8 +50,8 @@ void data_compression(std::string file_path, std::string compressed_file_path)
         const FpTree fptree{current_file, support_thresholds[iter]};
         std::vector<Pattern> frequent_patterns = mine_fptree(fptree);
         std::cout << "Patterns Mined: " << frequent_patterns.size() << std::endl;
-        // print_patterns(frequent_patterns);
-
+        print_patterns(frequent_patterns);
+        if(frequent_patterns.size() == 0) continue;
         std::ifstream input_file(current_file);
         std::ofstream outFile; // Declare a file stream object
         if (!input_file.is_open()) {
@@ -63,6 +65,7 @@ void data_compression(std::string file_path, std::string compressed_file_path)
             return ; // Return an error code
         }
 
+        std::cerr<<"compression begins"<<std::endl;
 
         while (std::getline(input_file, line)) {
             // process transactions
@@ -93,7 +96,7 @@ void data_compression(std::string file_path, std::string compressed_file_path)
                     }
                 }
             }
-
+            
             for(auto ele : transaction)
             {
                 outFile << ele << " " ;
@@ -103,7 +106,7 @@ void data_compression(std::string file_path, std::string compressed_file_path)
         }
         input_file.close();
         outFile.close();
-    
+        std::cerr<<"compression ends"<<std::endl;
         current_file = (current_file == file_path || current_file == "output-1.dat") ? "output.dat" : "output-1.dat" ;
     }
 
