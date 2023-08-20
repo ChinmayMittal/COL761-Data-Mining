@@ -124,7 +124,7 @@ void data_compression(std::string file_path, std::string compressed_file_path)
         for (int transaction_id = 0 ; transaction_id < transactions.size() ; transaction_id++ ) {
             // process transactions
             // std::istringstream iss(line);
-            std::set<int> sorted_transaction(transactions[transaction_id].begin(), transactions[transaction_id].end()) ;
+            std::multiset<int> sorted_transaction(transactions[transaction_id].begin(), transactions[transaction_id].end()) ;
 
             // std::set<Pattern, Pattern_comparator> sorted_frequent_patterns(frequent_patterns.begin(), frequent_patterns.end());
             for(int idx = 0 ; idx < std::min(10000, (int)frequent_patterns.size()) ; idx ++) // define order of processing transactions
@@ -141,7 +141,7 @@ void data_compression(std::string file_path, std::string compressed_file_path)
                         }
                         for(const auto ele : pattern.first)
                         {
-                            sorted_transaction.erase(ele);
+                            sorted_transaction.erase(sorted_transaction.find(ele));
                         }
                         sorted_transaction.insert(compression_dictionary[pattern.first]);
                     }
