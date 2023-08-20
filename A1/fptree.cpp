@@ -347,7 +347,7 @@ std::vector<Pattern> mine_fptree(const FpTree& fptree, Time_check &start_time)
 
     auto current_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_time = std::chrono::duration_cast<std::chrono::duration<double>>(current_time - *(start_time.start_time));
-    if (elapsed_time > std::chrono::seconds(450))
+    if (elapsed_time > std::chrono::seconds(600))
     {
         std::cout << "Function exceeded the maximum allowed execution time." << std::endl;
         start_time.stop_execution = true;
