@@ -63,9 +63,9 @@ void find_error(string file1, string file2){
 }
 
 
-int main(){
-    string file1 = "D_medium.dat";
-    string file2 = "decompressed_output_medium.dat";
+int main(int argc, const char *argv[]){
+    string file1 = argv[1];
+    string file2 = argv[2];
     find_error(file1,file2);
     return 0;
 }
