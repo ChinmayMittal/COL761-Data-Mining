@@ -34,8 +34,9 @@ void print_patterns(std::vector<Pattern>& patterns)
 void data_compression(std::string file_path, std::string compressed_file_path)
 {
 
-    std::vector<float> support_thresholds{1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.35, 0.3, 0.25, 0.2, 0.175, 0.15, 0.125, 0.1, 0.075, 0.05, 0.025, 0.01, 0.005, 0.001};
-    // std::vector<float> support_thresholds{1.0, 0.9, 0.75, 0.6, 0.5, 0.4, 0.3, 0.25};
+    // std::vector<float> support_thresholds{1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.35, 0.3, 0.25, 0.2, 0.175, 0.15, 0.125, 0.1, 0.075, 0.05, 0.025, 0.01, 0.005, 0.001};
+    std::vector<float> support_thresholds{1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.35, 0.3, 0.25, 0.2, 0.175, 0.15, 0.125, 0.1, 0.075, 0.05, 0.025, 0.01, 0.005, 0.0025, 0.001};
+    // std::vector<float> support_thresholds{0.01};
     // std::vector<float> support_thresholds{0.45};
     std::map<std::set<int>, int> compression_dictionary ;
     std::vector<Transaction> transactions; // stores the current state of the transactions
