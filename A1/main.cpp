@@ -75,7 +75,7 @@ void data_compression(std::string file_path, std::string compressed_file_path)
         auto start_time = std::chrono::high_resolution_clock::now();
 
         std::chrono::duration<double> elapsed_time = std::chrono::duration_cast<std::chrono::duration<double>>(start_time - algo_start_time);
-        if (elapsed_time > std::chrono::seconds(1800))
+        if (elapsed_time > std::chrono::seconds(2400))
         {
             std::cout << "Algorithm exceeded the maximum allowed execution time." << std::endl;
             break;
@@ -92,9 +92,11 @@ void data_compression(std::string file_path, std::string compressed_file_path)
         int used_while = 0;
         int while_stop = 5;
         
-        while(frequent_patterns.size() > 10000 && iter > 0 && (while_stop--))
+        while(frequent_patterns.size() > 10000 && iter > 0 && (while_stop--) && !t1.stop_execution)
         {
             const FpTree fptree2{transactions, (curr_thresh + past_thresh)/2};
+            start_time = std::chrono::high_resolution_clock::now();
+            t1.start_time = &start_time;
             curr_thresh = (curr_thresh + past_thresh)/2;
             used_while = 1;
             frequent_patterns = mine_fptree(fptree2, t1);
