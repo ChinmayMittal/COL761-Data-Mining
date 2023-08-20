@@ -177,7 +177,7 @@ void data_compression(std::string file_path, std::string compressed_file_path)
     // Print Statistics
     std::cout << "Initial Items: " << total_initial_terms  << "\n";
     std::cout << "Final Items: " << final_items << "\n";
-    std::cout << "Compression Ratio: " << float(final_items)/total_initial_terms*100  << "\n";
+    std::cout << "Amount of Compression: " << (100.0 - float(final_items)/total_initial_terms*100)  << "\n";
 }
 
 int main(int argc, const char *argv[])
