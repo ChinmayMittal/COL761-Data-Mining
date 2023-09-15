@@ -38,7 +38,8 @@ double dist(cluster cl1, cluster cl2){
 cluster join(cluster cluster1, cluster cluster2, double distance, int curr_id){
     cluster new_cluster;
     new_cluster.id = curr_id;
-    new_cluster.height = max(cluster1.height,cluster2.height) + distance;
+    // new_cluster.height = max(cluster1.height,cluster2.height) + distance;
+    new_cluster.height = distance;
     new_cluster.cl1 = cluster1.id;
     new_cluster.cl2 = cluster2.id;
     new_cluster.data_points = cluster1.data_points;
