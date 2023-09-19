@@ -4,93 +4,23 @@ using namespace std;
 
 struct data_point
 {
+    int id;
     double x;
     double y;
 };
 
-struct cluster
-{
-    int id;
-    double height;
-    int cl1;
-    int cl2;
-    vector<data_point> data_points;
-};
 
-inline bool operator<(const cluster& lhs, const cluster& rhs)
-{
-  return lhs.id < rhs.id;
-}
-
-double dist(cluster cl1, cluster cl2){
-    double min_dist = (double)LLONG_MAX;
-    for(int i = 0;i<cl1.data_points.size();i++){
-        for(int j = 0;j<cl2.data_points.size();j++){
-            double curr = (cl1.data_points[i].x - cl2.data_points[j].x)*(cl1.data_points[i].x - cl2.data_points[j].x);
-            curr+= (cl1.data_points[i].y - cl2.data_points[j].y)*(cl1.data_points[i].y - cl2.data_points[j].y);
-            curr = sqrt(curr);
-            min_dist = min(curr, min_dist);
-        }
-    }
-    return min_dist;
-}
-
-cluster join(cluster cluster1, cluster cluster2, double distance, int curr_id){
-    cluster new_cluster;
-    new_cluster.id = curr_id;
-    // new_cluster.height = max(cluster1.height,cluster2.height) + distance;
-    new_cluster.height = distance;
-    new_cluster.cl1 = cluster1.id;
-    new_cluster.cl2 = cluster2.id;
-    new_cluster.data_points = cluster1.data_points;
-    for(auto &ele : cluster2.data_points){
-        new_cluster.data_points.push_back(ele);
-    }
-    return new_cluster;
-}
-
-vector<cluster> single_linkage(set<cluster> &clusters){
-    cout<<"In the function single_linkage"<<"\n";
-    vector<cluster> total(clusters.begin(),clusters.end());
-    int curr_id = clusters.size() + 1;
-    while(clusters.size() > 1){
-        double min_dist = (double)LLONG_MAX;
-        cluster cl1,cl2;
-        for(auto itr1 = clusters.begin();itr1!= clusters.end();itr1++){
-            itr1++;
-            auto temp = itr1;
-            itr1--;
-            for(auto itr2 = temp;itr2!=clusters.end();itr2++){
-                double cluster_dist = dist((*itr1),(*itr2));
-                if(cluster_dist < min_dist){
-                    min_dist = cluster_dist;
-                    cl1 = *itr1;
-                    cl2 = *itr2;
-                }
-            }
-        }
-        cout<<"found new cluster: "<<curr_id<<"\n";
-        clusters.erase(cl1);
-        clusters.erase(cl2);
-
-        cluster new_cluster = join(cl1,cl2,min_dist,curr_id);
-        clusters.insert(new_cluster);
-        total.push_back(new_cluster);
-        curr_id++;
-    }
-    return total;
-}
-
-set<cluster> read_file(string file_name){
+vector<data_point> read_file(string file_name){
     ifstream input_file(file_name);
 
     if (!input_file.is_open()) {
         cout << "Failed to open the file." << "\n";
         return {};
     }
-    set<cluster> init_clusters;
+    
     int curr_id = 1;
     string line;
+    vector<data_point> dpts;
     while(std::getline(input_file, line))
     {
         data_point pt;
@@ -101,37 +31,94 @@ set<cluster> read_file(string file_name){
         cout<<x<<" "<<y<<"\n";
         pt.x = x;
         pt.y = y;
-        cluster cl;
-        cl.id = curr_id;
-        cl.cl1 = curr_id;
-        cl.cl2 = curr_id;
-        cl.height = 0;
-        cl.data_points.push_back(pt);
-        init_clusters.insert(cl);
+        pt.id = curr_id;
+        dpts.push_back(pt);
         // cout<<init_clusters.size()<<"\n";
         curr_id++;
     }
     input_file.close();
 
-    return init_clusters;
+    return dpts;
+}
+
+vector<int> cluster_id(2001);
+vector<int> cluster_size(2001,1);
+vector<int> point_id(2001,1);
+vector<double> height(2001,0);
+vector<vector<int>> adj(2001);
+
+int find(int id){
+    while(id != point_id[id]){
+        id = point_id[id];
+    }
+    return id;
+}
+
+void join(int id1, int id2){
+    id1 = find(id1);
+    id2 = find(id2);
+    if(cluster_size[id1] < cluster_size[id2]) swap(id1,id2);
+    cluster_size[id1] += cluster_size[id2];
+    point_id[id2] = id1;
+}
+
+double dist(data_point a, data_point b){
+    return sqrt((a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y - b.y));
+}
+
+void single_linkage(vector<data_point> &dpts){
+    int n = dpts.size();
+    
+    for(int i = 1;i<=n;i++){
+        cluster_id[i] = i;
+        point_id[i] = i;
+    }
+
+    vector<pair<double,pair<int,int>>> distances;
+
+    //Calculate distances between each points
+    for(int i = 0;i<n;i++){
+        for(int j = i+1;j<n;j++){
+            distances.push_back({dist(dpts[i],dpts[j]),{dpts[i].id,dpts[j].id}});
+        }
+    }
+
+    sort(distances.begin(),distances.end());
+
+    int new_cluster = n+1;
+    
+    //find(x) takes O(ln(n)) time (kruskal's algo)
+    for(int i = 0;i<n*n;i++){
+        int pt1 = distances[i].second.first;
+        int pt2 = distances[i].second.second;
+        if(find(pt1) == find(pt2)) continue;;
+        cout<<pt1<<" "<<pt2<<"\n";
+        height[new_cluster] = distances[i].first;
+        adj[new_cluster].push_back(cluster_id[find(pt1)]);
+        adj[new_cluster].push_back(cluster_id[find(pt2)]);
+        join(pt1,pt2);  //O(ln(n));
+        cluster_id[find(pt1)] = new_cluster;
+        new_cluster++;
+        if(new_cluster == 2*n) break;
+    }
+
 }
 
 int main(int argc, char const *argv[])
 {
     string file_name = argv[1];
 
-    auto init_clusters = read_file(file_name);
+    auto data_points = read_file(file_name);
     // cout<<init_clusters.size()<<"\n";
 
-    auto ans = single_linkage(init_clusters);
+    single_linkage(data_points);
 
-    for(auto ele : ans){
-        cout<<"cluster id: "<<ele.id<<" cluster height: "<<ele.height<<" left cluster: "<<ele.cl1<<" right cluster: "<<ele.cl2;
-        // cout<<" data points: ";
-        // for(auto pt: ele.data_points){
-        //     cout<<"("<<pt.x<<","<<pt.y<<") ";
-        // }
-        cout<<"\n";
+    for(int i = 1; i<= 2*data_points.size() - 1; i++){
+        cout<<i<<" ";
+        for(auto ele: adj[i]){
+            cout<<ele<<" ";
+        }
+        cout<<"height: "<<height[i]<<"\n";
     }
     
     return 0;
