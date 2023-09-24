@@ -1,0 +1,47 @@
+scanning ./data/yeast-gspan with 64110 graphs
+scanning done
+
+
+-------------------System Performance------------------
+			3.63101sec
+		5  Discovered SubGraphs
+---------------------------End-------------------------
+scanning ./data/yeast-gspan with 64110 graphs
+scanning done
+
+
+
+-------------------System Performance------------------
+			10.1086sec
+		18  Discovered SubGraphs
+---------------------------End-------------------------
+scanning ./data/yeast-gspan with 64110 graphs
+scanning done
+
+
+
+
+-------------------System Performance------------------
+			30.1712sec
+		61  Discovered SubGraphs
+---------------------------End-------------------------
+scanning ./data/yeast-gspan with 64110 graphs
+scanning done
+
+
+
+
+-------------------System Performance------------------
+			48.5741sec
+		108  Discovered SubGraphs
+---------------------------End-------------------------
+scanning ./data/yeast-gspan with 64110 graphs
+scanning done
+
+
+
+
+-------------------System Performance------------------
+			78.02sec
+		212  Discovered SubGraphs
+---------------------------End-------------------------

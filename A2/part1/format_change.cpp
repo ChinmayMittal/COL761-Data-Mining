@@ -13,8 +13,9 @@ struct graph{
 
 int main(int argc, char* argv[])
 {
+    string input_file_path(argv[1]);
     ifstream input_file;
-    input_file.open("data/167.txt_graph");
+    input_file.open(input_file_path);
     vector<graph*> graph_map;
     map<string, int> node_id_to_int;
     int node_count = 0;
@@ -55,12 +56,12 @@ int main(int argc, char* argv[])
     cout << graph_map.size() << endl;
 
 
-    string target_format = (argv[1]);
+    string target_format = (argv[2]);
 
     if(target_format == "fsg")
     {
         ofstream out_file;
-        out_file.open("data/fsg.txt_graph");
+        out_file.open(input_file_path + "-fsg");
         for(auto a : graph_map)
         {
             out_file << "t " << a->graph_id << "\n";
@@ -78,7 +79,7 @@ int main(int argc, char* argv[])
     if(target_format == "gspan")
     {
         ofstream out_file;
-        out_file.open("data/gspan.txt_graph");
+        out_file.open(input_file_path + "-gspan");
         int cnt = 0;
         for(auto a : graph_map)
         {
@@ -95,7 +96,25 @@ int main(int argc, char* argv[])
         }
     }
 
-
+    if(target_format=="gaston")
+    {
+        ofstream out_file;
+        out_file.open(input_file_path + "-gaston");
+        int cnt = 0;
+        for(auto a : graph_map)
+        {
+            out_file << "t # " << cnt << "\n";
+            for(int i = 0 ; i < a->num_nodes ; i ++)
+            {
+                out_file << "v " << i << " " << node_id_to_int[a->node_id[i]] <<"\n";
+            } 
+            for(int i = 0; i < a->num_edges; i++)
+            {
+                out_file << "e " << a->edges[i].first << " " << a->edges[i].second << " " << a->edge_id[i] << "\n";
+            }
+            cnt ++;
+        }
+    }
 
 
     for(auto a : graph_map)
