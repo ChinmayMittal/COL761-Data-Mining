@@ -1,0 +1,31 @@
+Root 10
+Root 11
+Root 12
+Root 13
+Root 14
+Root 15
+Root 16
+Root 17
+Root 18
+Root 19
+Root 20
+Root 21
+Root 22
+Root 23
+Root 24
+Root 25
+Root 26
+Root 27
+Root 28
+Frequent 2 cyclic graphs: 0 real trees: 0 paths: 78 total: 78
+Frequent 3 cyclic graphs: 0 real trees: 0 paths: 166 total: 166
+Frequent 4 cyclic graphs: 4 real trees: 58 paths: 235 total: 297
+Frequent 5 cyclic graphs: 11 real trees: 155 paths: 193 total: 359
+Frequent 6 cyclic graphs: 16 real trees: 268 paths: 115 total: 399
+Frequent 7 cyclic graphs: 4 real trees: 250 paths: 46 total: 300
+Frequent 8 cyclic graphs: 0 real trees: 73 paths: 5 total: 78
+Frequent 9 cyclic graphs: 0 real trees: 10 paths: 0 total: 10
+Frequent 10 cyclic graphs: 0 real trees: 1 paths: 0 total: 1
+TOTAL:
+Frequent cyclic graphs: 35 real trees: 815 paths: 838 total: 1688
+Approximate total runtime: 0.83s
