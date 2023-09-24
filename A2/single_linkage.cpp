@@ -120,6 +120,15 @@ int main(int argc, char const *argv[])
         }
         cout<<"height: "<<height[i]<<"\n";
     }
+
+    for(int i = 0;i<data_points.size();i++){
+        // cout<<i+1<<" ";
+        for(int j = 0;j<data_points.size();j++){
+            std::cout<<dist(data_points[i],data_points[j]);
+            if(j != data_points.size() - 1) std::cout<<",";
+        }
+        std::cout<<"\n";
+    }
     
     return 0;
 }
