@@ -11,6 +11,8 @@ dataset="$1"
 dimension="$2"
 output_image="$3"
 
+g++ -O3 -o clustering clustering.cpp
+
 #3rd argument is the maximum value of k
 #4th argument is the averaging parameter
 ./clustering ${dataset} ${dimension} 15 40

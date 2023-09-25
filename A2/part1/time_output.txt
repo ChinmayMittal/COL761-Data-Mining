@@ -1,96 +1,38 @@
+Support 95
+
+fsg: 
+
+real	0m33.931s
+user	0m14.814s
+sys	0m1.706s
+
+gspan: 
+
+real	0m8.111s
+user	0m3.597s
+sys	0m0.805s
+
+gaston: 
+
+real	0m3.727s
+user	0m0.670s
+sys	0m0.270s
 Support 90
 
 fsg: 
 
-real	0m11.627s
-user	0m11.511s
-sys	0m0.113s
+real	0m34.818s
+user	0m14.741s
+sys	0m1.696s
 
 gspan: 
 
-real	0m3.656s
-user	0m3.541s
-sys	0m0.112s
+real	0m7.990s
+user	0m3.677s
+sys	0m0.670s
 
 gaston: 
 
-real	0m0.598s
-user	0m0.549s
-sys	0m0.048s
-Support 80
-
-fsg: 
-
-real	0m15.218s
-user	0m15.107s
-sys	0m0.106s
-
-gspan: 
-
-real	0m10.134s
-user	0m9.995s
-sys	0m0.128s
-
-gaston: 
-
-real	0m1.442s
-user	0m1.335s
-sys	0m0.100s
-Support 70
-
-fsg: 
-
-real	0m26.586s
-user	0m26.425s
-sys	0m0.152s
-
-gspan: 
-
-real	0m30.205s
-user	0m30.062s
-sys	0m0.128s
-
-gaston: 
-
-real	0m2.884s
-user	0m2.757s
-sys	0m0.124s
-Support 60
-
-fsg: 
-
-real	0m46.550s
-user	0m46.357s
-sys	0m0.176s
-
-gspan: 
-
-real	0m48.614s
-user	0m48.424s
-sys	0m0.164s
-
-gaston: 
-
-real	0m4.458s
-user	0m4.318s
-sys	0m0.136s
-Support 50
-
-fsg: 
-
-real	1m7.706s
-user	1m7.462s
-sys	0m0.226s
-
-gspan: 
-
-real	1m18.072s
-user	1m17.813s
-sys	0m0.220s
-
-gaston: 
-
-real	0m6.045s
-user	0m5.880s
-sys	0m0.160s
-
+real	0m3.687s
+user	0m0.651s
+sys	0m0.371s

@@ -14,7 +14,7 @@
 # Options -----------------------------------------------
 #   Min Output Pattern Size:                     1
 #   Max Output Pattern Size:                     2147483647(INT_MAX)
-#   Min Support Threshold:                       25.0% (16028 transactions)
+#   Min Support Threshold:                       90.0% (57699 transactions)
 #   Generate Only Maximal Patterns:              No
 #   Generate PC-List:                            No
 #   Generate TID-List:                           No
@@ -26,139 +26,25 @@ t # 1-0, 63813
 v 0 C
 v 1 C
 u 0 1 1
-t # 1-1, 46474
-v 0 C
-v 1 N
-u 0 1 1
-t # 1-2, 63833
+t # 1-1, 63833
 v 0 C
 v 1 H
 u 0 1 1
-t # 1-3, 37698
-v 0 C
-v 1 O
-u 0 1 1
-t # 1-4, 30376
-v 0 H
-v 1 N
-u 0 1 1
-t # 1-5, 20702
-v 0 C
-v 1 N
-u 0 1 2
-t # 1-6, 41469
-v 0 C
-v 1 O
-u 0 1 2
-t # 1-7, 55902
-v 0 C
-v 1 C
-u 0 1 2
-t # 2-0, 29653
-v 0 N
-v 1 C
-v 2 H
-u 0 1 1
-u 0 2 1
-t # 2-1, 35046
-v 0 N
-v 1 C
-v 2 C
-u 0 1 1
-u 0 2 1
-t # 2-2, 26599
-v 0 O
-v 1 C
-v 2 C
-u 0 1 1
-u 0 2 1
-t # 2-3, 26798
-v 0 C
-v 1 H
-v 2 O
-u 0 1 1
-u 0 2 1
-t # 2-4, 26542
-v 0 C
-v 1 H
-v 2 N
-u 0 1 1
-u 0 2 1
-t # 2-5, 54580
-v 0 C
-v 1 H
-v 2 H
-u 0 1 1
-u 0 2 1
-t # 2-6, 57492
-v 0 C
-v 1 C
-v 2 C
-u 0 1 1
-u 0 2 1
-t # 2-7, 63197
+t # 2-0, 63197
 v 0 C
 v 1 C
 v 2 H
 u 0 1 1
 u 0 2 1
-t # 2-8, 36958
-v 0 C
-v 1 C
-v 2 O
-u 0 1 1
-u 0 2 1
-t # 2-9, 44154
-v 0 C
-v 1 C
-v 2 N
-u 0 1 1
-u 0 2 1
-t # 2-10, 53291
-v 0 C
-v 1 C
-v 2 H
-u 0 1 2
-u 0 2 1
-t # 2-11, 17010
-v 0 C
-v 1 C
-v 2 O
-u 0 1 2
-u 0 2 1
-t # 2-12, 33600
-v 0 C
-v 1 C
-v 2 N
-u 0 1 2
-u 0 2 1
-t # 2-13, 22419
-v 0 C
-v 1 N
-v 2 O
-u 0 1 1
-u 0 2 2
-t # 2-14, 17972
-v 0 C
-v 1 O
-v 2 O
-u 0 1 1
-u 0 2 2
-t # 2-15, 37803
-v 0 C
-v 1 C
-v 2 O
-u 0 1 1
-u 0 2 2
-t # 2-16, 17104
-v 0 C
-v 1 C
-v 2 N
-u 0 1 1
-u 0 2 2
-t # 2-17, 55608
-v 0 C
-v 1 C
-v 2 C
-u 0 1 1
-u 0 2 2
+#   Size Candidates Frequent Patterns 
+#   1               2                 
+#   2               1                 
+#   3    1          0                 
+# 
+#   Largest Frequent Pattern Size:               2
+#   Total Number of Candidates Generated:        1
+#   Total Number of Frequent Patterns Found:     3
+# 
+# Timing Information ------------------------------------
+#   Elapsed User CPU Time:                       1.5[sec]
+# *******************************************************

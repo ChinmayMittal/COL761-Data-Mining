@@ -40,7 +40,7 @@ gspan_output_file="gspan_output.txt"
 gaston_output_file="gaston_output.txt"
 time_output_file="time_output.txt"
 
-support_values=("90" "80" "70" "60" "50" "25")  # Add more values as needed
+support_values=("95" "90")  # Add more values as needed
 
 for support_fsg in "${support_values[@]}"; do
     support_gspan=$(awk "BEGIN { printf \"%.2f\", $support_fsg / 100 }")
@@ -53,3 +53,5 @@ for support_fsg in "${support_values[@]}"; do
     echo -e "\ngaston: " >> "$time_output_file"
     { time  ./gaston-1.1/gaston "$support_gaston" "$filename-gaston"  >> "$gaston_output_file"; } 2>> "$time_output_file"
 done
+
+python3 plot.py
