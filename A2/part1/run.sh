@@ -40,7 +40,7 @@ gspan_output_file="gspan_output.txt"
 gaston_output_file="gaston_output.txt"
 time_output_file="time_output.txt"
 
-support_values=("95" "90")  # Add more values as needed
+support_values=("95" "90" "80" "70" "60" "50" "35" "25" "10" "5")  # Add more values as needed
 
 for support_fsg in "${support_values[@]}"; do
     support_gspan=$(awk "BEGIN { printf \"%.2f\", $support_fsg / 100 }")
