@@ -1,0 +1,43 @@
+			    ________________
+
+			     DATASET FORMAT
+			    ________________
+
+
+1 Graph formats
+===============
+
+  - The files are plaintext.
+  - There are 6 csv files (gzipped).
+  - graph_labels, num_nodes and num_edges contain as many lines as there
+    are graphs. The first line of graph_labels contains the label of
+    graph 1, first line of num_nodes contains the num of nodes in graph
+    1, and the first line of num_edges contains the num of edges in
+    graph 1.
+  - node_features: if graph 1 has n1 nodes, graph 2 has n2 nodes,
+    etc. Then first n1 lines contain node features of graph 1, next n2
+    lines contains node features of nodes of graph 2, so on. Each line
+    itself will be a vector (multiple categorical scalar values). The
+    order in which the nodes appear will be used in the edges.csv file
+    as defined below.
+  - edges: if graph 1 has e1 edges, graph 2 has e2 edges, etc. Then
+    first e1 lines contain edges (node pairs) of graph 1, first e2 lines
+    contain edges of graph 2 and so on. The node numbers are in order of
+    their appearance in the node_features file. That is if there is an
+    edge (0, 10) in graph k, then there is an edge in graph k between
+    the nodes whose node features appear at the first and the eleventh
+    (0-indexed node numbers) row in the node_features file for that
+    graph.
+  - edge_features: if graph 1 has e1 edges, graph 2 has e2 edges,
+    etc. Then first e1 lines contain attributes of graph 1, first e2
+    lines contain attributes of graph 2 and so on. Each line itself will
+    be a vector (multiple categorical scalar values).
+
+
+2 Loading to PyTorch Geometric
+==============================
+
+  - You may create `torch_geometric.data.Data' objects from these
+    graphs. Then create a `torch_geometric.data.Dataset' object, and
+    then use a `torch_geometric.loader.DataLoader' to batch these
+    graphs. Read their respective documentations.
