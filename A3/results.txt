@@ -1,0 +1,34 @@
+Processing 1
+Dim: 1, L1:   Min: 0.00000,   L1: Max: 0.73999
+Dim: 1, L2:   Min: 0.00000,   L2: Max: 0.73999
+Dim: 1, Linf: Min: 0.00000, Linf: Max: 0.73999
+
+Processing 2
+Dim: 2, L1:   Min: 0.00062,   L1: Max: 1.52478
+Dim: 2, L2:   Min: 0.00050,   L2: Max: 1.08820
+Dim: 2, Linf: Min: 0.00044, Linf: Max: 0.84455
+
+Processing 4
+Dim: 4, L1:   Min: 0.03211,   L1: Max: 3.00577
+Dim: 4, L2:   Min: 0.01959,   L2: Max: 1.52360
+Dim: 4, Linf: Min: 0.01461, Linf: Max: 0.91432
+
+Processing 8
+Dim: 8, L1:   Min: 0.32262,   L1: Max: 5.36883
+Dim: 8, L2:   Min: 0.14535,   L2: Max: 1.96089
+Dim: 8, Linf: Min: 0.08694, Linf: Max: 0.94600
+
+Processing 16
+Dim: 16, L1:   Min: 1.56087,   L1: Max: 9.53106
+Dim: 16, L2:   Min: 0.50359,   L2: Max: 2.53977
+Dim: 16, Linf: Min: 0.23821, Linf: Max: 0.97280
+
+Processing 32
+Dim: 32, L1:   Min: 4.98147,   L1: Max: 16.65440
+Dim: 32, L2:   Min: 1.14958,   L2: Max: 3.25400
+Dim: 32, Linf: Min: 0.41021, Linf: Max: 0.98238
+
+Processing 64
+Dim: 64, L1:   Min: 13.01853,   L1: Max: 29.97288
+Dim: 64, L2:   Min: 2.10874,   L2: Max: 4.25918
+Dim: 64, Linf: Min: 0.56226, Linf: Max: 0.99111
