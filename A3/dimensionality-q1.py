@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+from matplotlib import pyplot as plt
 
 def simple_progress_bar(total_iterations, current_index):
     progress = (current_index / total_iterations) * 100
@@ -10,6 +11,9 @@ def mean(iter):
     return sum(iter)/len(iter)
 
 DIMENSIONS = [1, 2, 4, 8, 16, 32, 64]
+L1_RATIOS = list()
+L2_RATIOS = list()
+LINF_RATIOS = list()
 NUM_POINTS = int(1e6)
 QUERY_POINTS = 100
 
@@ -45,9 +49,30 @@ for DIMENSION in DIMENSIONS:
         
         Linf_min.append(np.min(Linf))
         Linf_max.append(np.max(Linf))
-        
-    print()
-    print(f"Dim: {DIMENSION}, L1:   Min: {mean(L1_min):.5f},   L1: Max: {mean(L1_max):.5f}")
-    print(f"Dim: {DIMENSION}, L2:   Min: {mean(L2_min):.5f},   L2: Max: {mean(L2_max):.5f}")
-    print(f"Dim: {DIMENSION}, Linf: Min: {mean(Linf_min):.5f}, Linf: Max: {mean(Linf_max):.5f}")
+    
+    L1_ratio =   [x/y for x, y in zip(L1_max, L1_min)]
+    L2_ratio =   [x/y for x, y in zip(L2_max, L2_min)]
+    Linf_ratio = [x/y for x, y in zip(Linf_max, Linf_min)]
+    
+    L1_RATIOS.append(mean(L1_ratio))
+    L2_RATIOS.append(mean(L2_ratio))
+    LINF_RATIOS.append(mean(Linf_ratio))
 
+    print()
+    print(f"Dim: {DIMENSION}, L1:   Min: {mean(L1_min):.5f},   L1: Max: {mean(L1_max):.5f}, L1 Max-Min Ratio: {mean(L1_ratio):.5f}")
+    print(f"Dim: {DIMENSION}, L2:   Min: {mean(L2_min):.5f},   L2: Max: {mean(L2_max):.5f}, L2 Max-Min Ratio: {mean(L2_ratio):.5f}")
+    print(f"Dim: {DIMENSION}, Linf: Min: {mean(Linf_min):.5f}, Linf: Max: {mean(Linf_max):.5f}, Linf Max-Min Ratio: {mean(Linf_ratio):.5f}")
+
+
+plt.plot(DIMENSIONS, L1_RATIOS, marker='x', label="L1 Distance")
+plt.plot(DIMENSIONS, L2_RATIOS, marker='^', label="L2 Distance")
+plt.plot(DIMENSIONS, LINF_RATIOS, marker='o', label="Linf Distance")
+plt.yscale('log')
+
+plt.xlabel('Dimension')
+plt.ylabel('Average of (Max/Min) Distance (Log-Scale)')
+plt.title('Curse of Dimensionality')
+plt.legend()
+plt.grid()
+
+plt.savefig('Q1.png')
