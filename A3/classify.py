@@ -1,5 +1,5 @@
 import torch
-from models import GCNClassifier
+from models import *
 from utils import calculate_accuracy
 from dataset import GraphDataset
 from torch_geometric.loader import DataLoader
@@ -24,7 +24,7 @@ val_loader = DataLoader(X_val,batch_size=BATCH_SIZE, shuffle=True)
 
 device = torch.device('cpu')
 
-model = GCNClassifier(64, 1, 128)
+model = BaselineClassifier(64, 1, 128)
 optimizer = torch.optim.Adam(model.parameters(),lr=0.001, weight_decay=1e-3)
 optimizer.zero_grad()
 
