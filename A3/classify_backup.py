@@ -1,4 +1,3 @@
-import sys
 import argparse
 import torch
 from models import *
@@ -48,7 +47,7 @@ string_to_models = {
     "SAGE" : GNN_TYPE.SAGE
 }
 
-model = BaselineClassifier(args.hidden_channels)
+model = BaselineClassifier(args.hidden_channels, 1, 128)
 if args.model != "Baseline":
     model = GNN_common_classifier(args.hidden_channels, 1, 128, string_to_models[args.model], args.layers, (args.normalize == 1))
 optimizer = torch.optim.Adam(model.parameters(),lr=args.lr, weight_decay=5e-4)
@@ -72,6 +71,7 @@ for epoch in range(NUM_EPOCHS):
 
         optimizer.zero_grad()
         loss = loss_fun(out.reshape(1, -1), batch.y.reshape(1, -1))
+        # print(float(loss))
 
         # Backward pass and optimization
         loss.mean().backward(retain_graph=True)
@@ -99,6 +99,7 @@ for epoch in range(NUM_EPOCHS):
             if(batch.edge_index.shape[0] == 0):
                 continue
             out = model(batch.x, batch.edge_index.to(torch.long), batch.edge_attr, batch.batch, batch.y.shape[0])
+            # print(out.shape)
             loss = loss_fun(out.reshape(1, -1), batch.y.reshape(1, -1))
             loss = loss.mean()
 
@@ -109,9 +110,8 @@ for epoch in range(NUM_EPOCHS):
         average_bce_val = total_bce / len(val_loader)
         accuracy_val = total_correct_val / total_samples_val
     # Print logs
-    if epoch % 10 == 0:
-        print(f"Epoch {epoch+1}/{NUM_EPOCHS}, Train Loss: {average_loss:.4f}, Train Accuracy: {accuracy_train:.4f}, Val BCE: {average_bce_val:.4f}, Val Accuracy: {accuracy_val:.4f}")
-        sys.stdout.flush()
+    print(f"Epoch {epoch+1}/{NUM_EPOCHS}, Train Loss: {average_loss:.4f}, Train Accuracy: {accuracy_train:.4f}, Val BCE: {average_bce_val:.4f}, Val Accuracy: {accuracy_val:.4f}")
+    
 # Make sure to clear the computation graph after the loop
 torch.cuda.empty_cache()
 
@@ -127,7 +127,8 @@ for i, batch in enumerate(val_loader):
     y_pred = model(batch.x, batch.edge_index.to(torch.long), batch.edge_attr, batch.batch, batch.y.shape[0])
     y_true = batch.y
     y_true = y_true.unsqueeze(1)
+    # print(y_pred.shape)
+    # print(y_true.shape)
     input_dict = {'y_true': y_true, 'y_pred': y_pred}
     result = evaluator.eval(input_dict)
     print(result)
-    sys.stdout.flush()

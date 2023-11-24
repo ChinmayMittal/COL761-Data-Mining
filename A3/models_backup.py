@@ -63,7 +63,7 @@ class GNN_common_classifier(torch.nn.Module):
         self.node_encoder = NodeEncoder(in_channels)
         self.edge_encoder = EdgeEncoder(in_channels)
 
-        # self.edge_embeddings = torch.nn.Embedding(60, in_channels)
+        self.edge_embeddings = torch.nn.Embedding(60, in_channels)
 
         init.kaiming_uniform_(self.linear.weight, mode='fan_in', nonlinearity='sigmoid')
         init.kaiming_uniform_(self.linear2.weight, mode='fan_in', nonlinearity='relu')
@@ -71,18 +71,13 @@ class GNN_common_classifier(torch.nn.Module):
 
     def forward(self, x, edge_index, edge_attr, batch, size):
         x = self.node_encoder(x.to(torch.long))
-        edge_attr = self.edge_encoder(edge_attr.to(torch.long))
-        # print(edge_attr.shape)
-        # edge_attr = self.edge_embeddings((edge_attr[:, 0] + (edge_attr[:, 1] + edge_attr[:,2]*6)*5).to(torch.long))
-        # print(edge_attr.shape)
+        enc_attr = self.edge_encoder(edge_attr.to(torch.long))
+        edge_attr = self.edge_embeddings((edge_attr[:, 0] + (edge_attr[:, 1] + edge_attr[:,2]*6)*5).to(torch.long))
         temp = self.edge_linear(edge_attr)
         temp = torch.sigmoid(temp)
         x = self.linear(x)
         for i in range(self.num_layers):
-            if self.gnn_type == GNN_TYPE.GAT or self.gnn_type == GNN_TYPE.GCN:
-                x = self.layers[i](x, edge_index, temp).relu()
-            else:
-                x = self.layers[i](x, edge_index).relu()
+            x = self.layers[i](x, edge_index, temp).relu()
             if self.use_norm_layers:
                 x = self.norm_layers[i](x)
         x = self.linear2(x)
@@ -187,10 +182,9 @@ class GCNClassifier(torch.nn.Module):
 class GCNRegressor(torch.nn.Module):
     def __init__(self, hidden_channels, out_channels, emb_dim):
         super().__init__()
-        self.conv1 = GATConv(emb_dim, hidden_channels//2, heads = 2)
-        self.conv2 = GATConv(hidden_channels, hidden_channels//2, heads = 2)
+        self.conv1 = GATConv(emb_dim, hidden_channels, heads = 2)
+        self.conv2 = GATConv(2*hidden_channels, hidden_channels, heads = 1)
         self.edge_linear = torch.nn.Linear(emb_dim, 1)
-        self.dropout = torch.nn.Dropout(p = 0.5)
 
         self.fc1 = torch.nn.Linear(hidden_channels, 64)
         self.bn1 = torch.nn.BatchNorm1d(64)
@@ -218,7 +212,6 @@ class GCNRegressor(torch.nn.Module):
         edge_attr = self.edge_encoder(edge_attr.to(torch.long))
         temp = self.edge_linear(edge_attr)
         temp = torch.relu(temp)
-        
         x = self.conv1(x, edge_index, temp).relu()
         x = self.conv2(x, edge_index, temp).relu()
         x = global_mean_pool(x, batch)
@@ -226,17 +219,14 @@ class GCNRegressor(torch.nn.Module):
         x = self.fc1(x)
         x = self.bn1(x)
         x = torch.relu(x)
-        x = self.dropout(x)
 
         x = self.fc2(x)
         x = self.bn2(x)
         x = torch.relu(x)
-        x = self.dropout(x)
 
         x = self.fc3(x)
         x = self.bn3(x)
         x = torch.relu(x)
-        x = self.dropout(x)
 
         x = self.fc4(x)
         # x = torch.relu(x)
@@ -246,111 +236,14 @@ class GCNRegressor(torch.nn.Module):
         # print(x)
         # x = x[root_mask, :]
         return x
-
-class LogisticRegression(torch.nn.Module):
-    def __init__(self, emb_dim):
-        super().__init__()
-
-        # self.edge_linear = torch.nn.Linear(emb_dim, 1)
-        # self.dropout = torch.nn.Dropout(p = 0.5)
-        self.node_encoder = NodeEncoder(emb_dim)
-        self.edge_encoder = EdgeEncoder(emb_dim)
-        
-        self.fc1 = torch.nn.Linear(emb_dim, 1)
-
-        #Initializations
-        init.kaiming_uniform_(self.fc1.weight, mode='fan_in', nonlinearity='sigmoid')
-        # torch.nn.init.xavier_uniform_(self.edge_linear.weight)
-
-    def forward(self, x, edge_index, edge_attr, batch, size):
-        
-        x = self.node_encoder(x.to(torch.long))
-        # edge_attr = self.edge_encoder(edge_attr.to(torch.long))
-        
-        # temp = self.edge_linear(edge_attr)
-        # temp = torch.sigmoid(temp)
-
-        x = global_mean_pool(x, batch)
-
-        # x = self.dropout(x)
-        x = self.fc1(x)
-
-        x = F.sigmoid(x)
-        return x        
-
-class LinearRegression(torch.nn.Module):
-    def __init__(self, emb_dim):
-        super().__init__()
-
-        self.fc1 = torch.nn.Linear(emb_dim, 1)
-
-        self.node_encoder = NodeEncoder(emb_dim)
-        self.edge_encoder = EdgeEncoder(emb_dim)
-
-        #Initializations
-        init.kaiming_uniform_(self.fc1.weight, mode='fan_in', nonlinearity='sigmoid')
-
-    def forward(self, x, edge_index, edge_attr, batch, size):
-        x = self.node_encoder(x.to(torch.long))
-        # edge_attr = self.edge_encoder(edge_attr.to(torch.long))
-
-        x = global_mean_pool(x, batch)
-        x = self.fc1(x)
-
-        return x
     
-class BaselineRegressor(torch.nn.Module):
-    def __init__(self, emb_dim):
-        super().__init__()
-        # self.edge_linear = torch.nn.Linear(emb_dim, 1)
-        self.node_encoder = NodeEncoder(emb_dim)
-        self.dropout = torch.nn.Dropout(p = 0.5)
-        # self.edge_encoder = EdgeEncoder(emb_dim)
 
-        self.fc1 = torch.nn.Linear(emb_dim, 32)
-        self.bn1 = torch.nn.BatchNorm1d(32)
 
-        self.fc2 = torch.nn.Linear(32, 16)
-        self.bn2 = torch.nn.BatchNorm1d(16)
 
-        self.fc3 = torch.nn.Linear(16, 1)
 
-        #Initializations
-        init.kaiming_uniform_(self.fc1.weight, mode='fan_in', nonlinearity='relu')
-        init.kaiming_uniform_(self.fc2.weight, mode='fan_in', nonlinearity='relu')
-        init.kaiming_uniform_(self.fc3.weight, mode='fan_in', nonlinearity='relu')
-        # init.kaiming_uniform_(self.fc4.weight, mode='fan_in', nonlinearity='relu')
-        # torch.nn.init.xavier_uniform_(self.edge_linear.weight)
 
-    def forward(self, x, edge_index, edge_attr, batch, size):
-        x = self.node_encoder(x.to(torch.long))
-        # edge_attr = self.edge_encoder(edge_attr.to(torch.long))
-        # temp = self.edge_linear(edge_attr)
-        # temp = torch.relu(temp)
-
-        x = global_mean_pool(x, batch)
-        # print(x)
-        x = self.fc1(x)
-        x = self.bn1(x)
-        x = torch.relu(x)
-        x = self.dropout(x)
-
-        x = self.fc2(x)
-        x = self.bn2(x)
-        x = torch.relu(x)
-        x = self.dropout(x)
-
-        x = self.fc3(x)
-        # x = self.bn3(x)
-        # x = torch.relu(x)
-        # x = self.dropout(x)
-
-        # x = self.fc4(x)
-
-        return x
-            
 class BaselineClassifier(torch.nn.Module):
-    def __init__(self, emb_dim):
+    def __init__(self, hidden_channels, out_channels, emb_dim):
         super().__init__()
 
         self.edge_linear = torch.nn.Linear(emb_dim, 1)
@@ -365,7 +258,7 @@ class BaselineClassifier(torch.nn.Module):
         self.fc3 = torch.nn.Linear(32, 16)
         self.bn3 = torch.nn.BatchNorm1d(16)
 
-        self.fc4 = torch.nn.Linear(16, 1)
+        self.fc4 = torch.nn.Linear(16, out_channels)
         self.node_encoder = NodeEncoder(emb_dim)
         self.edge_encoder = EdgeEncoder(emb_dim)
 
@@ -378,19 +271,15 @@ class BaselineClassifier(torch.nn.Module):
         torch.nn.init.xavier_uniform_(self.edge_linear.weight)
 
     def forward(self, x, edge_index, edge_attr, batch, size):
-        # print(x.shape) ### NODES * DIMENSION
-        # print(edge_index.shape) ### 2  * EDGES
-        # print(edge_attr.shape) ### EDGES * DIMENSION
-        # print(batch) ### NUM NODES
-        # print(edge_index) ## 2 * NUMBER OF EDGES
-        # print(size) 
-        
+        # print(x.shape)
         x = self.node_encoder(x.to(torch.long))
+        # print(x.shape)
         edge_attr = self.edge_encoder(edge_attr.to(torch.long))
         temp = self.edge_linear(edge_attr)
         temp = torch.relu(temp)
         # print(temp.shape)
         x = global_mean_pool(x, batch)
+        # print(x.shape)
         x = self.fc1(x)
         x = self.bn1(x)
         x = torch.relu(x)
