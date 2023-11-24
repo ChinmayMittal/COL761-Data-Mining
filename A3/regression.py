@@ -1,7 +1,7 @@
 import torch
 from evaluate import Evaluator
 from dataset import GraphDataset
-from models import GCNRegressor
+from models import *
 from torch_geometric.loader import DataLoader
 
 
@@ -23,12 +23,14 @@ val_loader = DataLoader(X_val, batch_size=len(X_val), shuffle=True)
 
 device = torch.device('cpu')
 
-model = GCNRegressor(32, 1, 64)
-optimizer = torch.optim.Adam(model.parameters(),lr=0.001)
+model = GCNRegressor(64, 1, 128)
+# model = LinearRegression(64)
+# model = BaselineRegressor(64)
+optimizer = torch.optim.Adam(model.parameters(),lr=3e-4)
 
 loss_fun = torch.nn.MSELoss()
 optimizer.zero_grad()
-NUM_EPOCHS = 100
+NUM_EPOCHS = 150
 
 for epoch in range(NUM_EPOCHS):
     model.train()

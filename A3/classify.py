@@ -24,7 +24,8 @@ val_loader = DataLoader(X_val,batch_size=BATCH_SIZE, shuffle=True)
 
 device = torch.device('cpu')
 
-model = BaselineClassifier(64, 1, 128)
+# model = BaselineClassifier(64, 1, 128)
+model = LogisticRegression(64)
 optimizer = torch.optim.Adam(model.parameters(),lr=0.001, weight_decay=1e-3)
 optimizer.zero_grad()
 
