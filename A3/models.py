@@ -77,7 +77,10 @@ class GNN_common_classifier(torch.nn.Module):
         temp = torch.sigmoid(temp)
         x = self.linear(x)
         for i in range(self.num_layers):
-            x = self.layers[i](x, edge_index, temp).relu()
+            if self.gnn_type == GNN_TYPE.GAT or self.gnn_type == GNN_TYPE.GCN:
+                x = self.layers[i](x, edge_index, temp).relu()
+            else:
+                x = self.layers[i](x, edge_index).relu()
             if self.use_norm_layers:
                 x = self.norm_layers[i](x)
         x = self.linear2(x)
