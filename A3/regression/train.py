@@ -2,7 +2,7 @@ import sys
 import torch
 import argparse
 import numpy as np
-from models import GNNRegressor
+from models import GNNRegressor, GNN_TYPE
 from dataset import GraphDataset
 from torch_geometric.loader import DataLoader
 from evaluator import Evaluator
@@ -35,11 +35,12 @@ val_loader = DataLoader(X_val,batch_size=BATCH_SIZE, shuffle=False)
 
 device = torch.device('cpu')
 
-model = GNNRegressor(128, 1, 64)
+model = GNNRegressor(128, 1, 128, GNN_TYPE.GIN, 4, True)
 optimizer = torch.optim.Adam(model.parameters(),lr=1e-3, weight_decay=5e-4)
 optimizer.zero_grad()
 loss_fun = torch.nn.MSELoss()
 
+best_val_mse = 100
 for epoch in range(NUM_EPOCHS):
     model.train()
     model.to(device)
@@ -83,6 +84,10 @@ for epoch in range(NUM_EPOCHS):
             total_val_mse_loss += loss.item()
 
         average_mse_val = total_val_mse_loss / len(val_loader)
+        if average_mse_val < best_val_mse:
+            best_val_mse = average_mse_val
+            torch.save(model.state_dict(), model_path)
+            
 
     # Print logs
     if epoch % 5 == 0:
@@ -91,8 +96,8 @@ for epoch in range(NUM_EPOCHS):
 
 # Make sure to clear the computation graph after the loop
 torch.cuda.empty_cache()
-torch.save(model.state_dict(), model_path)
-
+model = GNNRegressor(128, 1, 128, GNN_TYPE.GIN, 4, True)
+model.load_state_dict(torch.load(model_path))
 val_loader = DataLoader(X_val, batch_size= BATCH_SIZE, shuffle = False)
 evaluator = Evaluator('dataset-1')
 

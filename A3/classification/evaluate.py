@@ -2,7 +2,7 @@ import sys
 import torch
 import numpy as np
 import argparse
-from models import GNNClassifier
+from models import GNNClassifier, GNN_TYPE
 from dataset import GraphDataset
 from utils import calculate_accuracy, tocsv
 from torch_geometric.loader import DataLoader
@@ -29,10 +29,10 @@ val_loader = DataLoader(X_val,batch_size=BATCH_SIZE, shuffle=False)
 
 
 device = torch.device('cpu')
-model = GNNClassifier(128, 1, 64)
+model = GNNClassifier(128, 1, 128, GNN_TYPE.GIN, 3, True)
 model.load_state_dict(torch.load(model_path))
 
-preds = np.array([])
+preds = np.array([], dtype=np.int32)
 for i, batch in enumerate(val_loader):
     model.eval()
     # Move batch to device
@@ -46,9 +46,7 @@ for i, batch in enumerate(val_loader):
     
     sys.stdout.flush()
 
-# print(preds)
-# print(preds.shape)
-tocsv(y_pred, task="classification")
+tocsv(preds, task="classification")
 
 
 

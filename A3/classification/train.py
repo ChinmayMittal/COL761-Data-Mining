@@ -2,7 +2,7 @@ import sys
 import torch
 import argparse
 import numpy as np
-from models import GNNClassifier
+from models import GNNClassifier, GNN_TYPE
 from dataset import GraphDataset
 from utils import calculate_accuracy
 from torch_geometric.loader import DataLoader
@@ -25,6 +25,7 @@ val_dataset_path = args.val_dataset_path
 print(f"Model Path: {model_path}")
 print(f"Training Dataset Path: {dataset_path}")
 print(f"Validation Dataset Path: {val_dataset_path}")
+evaluator = Evaluator('dataset-2')
 
 BATCH_SIZE = 128
 NUM_EPOCHS = 100
@@ -37,15 +38,18 @@ val_loader = DataLoader(X_val,batch_size=BATCH_SIZE, shuffle=False)
 
 device = torch.device('cpu')
 
-model = GNNClassifier(128, 1, 64)
+model = GNNClassifier(128, 1, 128, GNN_TYPE.GIN, 3, True)
 optimizer = torch.optim.Adam(model.parameters(),lr=1e-3, weight_decay=5e-4)
 optimizer.zero_grad()
+
+best_roc_auc = 0.0
 
 ### Training Loop
 for epoch in range(NUM_EPOCHS):
     model.train()
     model.to(device)
     total_loss = 0.0
+    total_roc = 0.0
     total_correct_train = 0
     total_samples_train = 0
     for i, batch in enumerate(train_loader):
@@ -59,6 +63,9 @@ for epoch in range(NUM_EPOCHS):
 
         optimizer.zero_grad()
         loss = loss_fun(out.reshape(1, -1), batch.y.reshape(1, -1))
+        
+        input_dict = {'y_true': batch.y.reshape(-1, 1), 'y_pred': out.reshape(-1, 1)}
+        total_roc += evaluator.eval(input_dict)['rocauc']
 
         # Backward pass and optimization
         loss.mean().backward(retain_graph=True)
@@ -69,6 +76,7 @@ for epoch in range(NUM_EPOCHS):
         total_samples_train += batch.y.shape[0]
     # scheduler.step()
     average_loss = total_loss / len(train_loader)
+    average_roc = total_roc / len(train_loader)
     accuracy_train = total_correct_train / total_samples_train
 
      # Validation phase
@@ -77,6 +85,7 @@ for epoch in range(NUM_EPOCHS):
         total_bce = 0.0
         total_correct_val = 0
         total_samples_val = 0
+        roc_auc_sum = 0.0
 
         for i, batch in enumerate(val_loader):
              # Move batch to device
@@ -86,8 +95,13 @@ for epoch in range(NUM_EPOCHS):
             if(batch.edge_index.shape[0] == 0):
                 continue
             out = model(batch.x, batch.edge_index.to(torch.long), batch.edge_attr, batch.batch, batch.y.shape[0])
+            
+            
             loss = loss_fun(out.reshape(1, -1), batch.y.reshape(1, -1))
             loss = loss.mean()
+            
+            input_dict = {'y_true': batch.y.reshape(-1, 1), 'y_pred': out.reshape(-1, 1)}
+            roc_auc_sum += evaluator.eval(input_dict)['rocauc']
 
             total_bce += loss.item()
             total_correct_val += calculate_accuracy(out.reshape(1, -1), batch.y.reshape(1, -1)) * batch.y.shape[0]
@@ -95,16 +109,24 @@ for epoch in range(NUM_EPOCHS):
 
         average_bce_val = total_bce / len(val_loader)
         accuracy_val = total_correct_val / total_samples_val
+        roc_auc = roc_auc_sum / len(val_loader)
+        
+        if roc_auc > best_roc_auc:
+            best_roc_auc = roc_auc
+            torch.save(model.state_dict(), model_path)
+        
+        
     # Print logs
     if epoch % 5 == 0:
-        print(f"Epoch {epoch+1}/{NUM_EPOCHS}, Train Loss: {average_loss:.4f}, Train Accuracy: {accuracy_train:.4f}, Val BCE: {average_bce_val:.4f}, Val Accuracy: {accuracy_val:.4f}")
+        print(f"Epoch {epoch+1}/{NUM_EPOCHS}, Train Loss: {average_loss:.4f}, Train Accuracy: {accuracy_train:.4f}, Train-ROC: {average_roc:.4f}, Val BCE: {average_bce_val:.4f}, Val Accuracy: {accuracy_val:.4f}, Val ROC-AUC: {roc_auc:.4f}")
         sys.stdout.flush()
 # Make sure to clear the computation graph after the loop
 torch.cuda.empty_cache()
 
-torch.save(model.state_dict(), model_path)
 
-evaluator = Evaluator('dataset-2')
+
+model = GNNClassifier(128, 1, 128, GNN_TYPE.GIN, 3, True)
+model.load_state_dict(torch.load(model_path))
 val_loader = DataLoader(X_val, batch_size= BATCH_SIZE, shuffle = False)
 
 y_true_all = None

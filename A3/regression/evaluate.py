@@ -2,7 +2,7 @@ import sys
 import torch
 import numpy as np
 import argparse
-from models import GNNRegressor
+from models import GNNRegressor, GNN_TYPE
 from dataset import GraphDataset
 from utils import tocsv
 from torch_geometric.loader import DataLoader
@@ -29,7 +29,7 @@ val_loader = DataLoader(X_val,batch_size=BATCH_SIZE, shuffle=False)
 
 
 device = torch.device('cpu')
-model = GNNRegressor(128, 1, 64)
+model = GNNRegressor(128, 1, 128, GNN_TYPE.GIN, 4, True)
 model.load_state_dict(torch.load(model_path))
 
 preds = np.array([])
@@ -47,4 +47,4 @@ for i, batch in enumerate(val_loader):
 
 # print(preds)
 # print(preds.shape)
-tocsv(y_pred, task="regression")
+tocsv(preds, task="regression")
