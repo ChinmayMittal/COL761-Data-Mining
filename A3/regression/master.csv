@@ -1,0 +1,14 @@
+,dataset-2,dataset-1
+num tasks,1,1
+eval metric,rocauc,rmse
+version,1,1
+add_inverse_edge,True,True
+data type,graph,graph
+has_node_attr,True,True
+has_edge_attr,True,True
+task type,binary classification,regression
+num classes,2,-1
+split,scaffold,scaffold
+additional node files,None,None
+additional edge files,None,None
+binary,False,False
