@@ -1,0 +1,9 @@
+# Ignore Visual Studio Code settings
+.vscode/
+
+# Ignore Python compiled files
+**/__pycache__/
+*.pyc
+
+# Ignore .DS_Store files (macOS)
+.DS_Store
